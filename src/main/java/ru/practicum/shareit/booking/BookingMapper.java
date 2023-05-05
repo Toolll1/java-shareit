@@ -1,8 +1,6 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemDto;
 
 @Service
 public class BookingMapper {

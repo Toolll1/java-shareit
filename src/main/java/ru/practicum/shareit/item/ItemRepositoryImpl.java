@@ -45,19 +45,19 @@ public class ItemRepositoryImpl implements ItemRepository {
 
         Item item = items.get(newItem.getId());
 
-        if (!newItem.getOwner().equals(item.getOwner())){
+        if (!newItem.getOwner().equals(item.getOwner())) {
             throw new ObjectNotFoundException("You can't change the owner");
         }
         if (newItem.getDescription() != null) {
-           item.setDescription(newItem.getDescription());
+            item.setDescription(newItem.getDescription());
         }
         if (newItem.getRequest() != null) {
             item.setRequest(newItem.getRequest());
         }
-        if (newItem.getAvailable() != null){
+        if (newItem.getAvailable() != null) {
             item.setAvailable(newItem.getAvailable());
         }
-        if (newItem.getName() != null){
+        if (newItem.getName() != null) {
             item.setName(newItem.getName());
         }
 
@@ -77,7 +77,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 
         Set<Item> itemsBySearch = new HashSet<>();
 
-        if (text.isBlank() || text.isEmpty()){
+        if (text.isBlank() || text.isEmpty()) {
             return new ArrayList<>();
         }
 

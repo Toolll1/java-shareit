@@ -29,7 +29,7 @@ public class UserRepositoryImpl implements UserRepository {
     public User create(User newUser) {
 
         for (User user : users.values()) {
-            if (user.getEmail().equals(newUser.getEmail())){
+            if (user.getEmail().equals(newUser.getEmail())) {
                 throw new ValidateException("A user with this email already exists");
             }
         }
@@ -44,7 +44,7 @@ public class UserRepositoryImpl implements UserRepository {
     public User change(User newUser) {
 
         for (User user : users.values()) {
-            if (user.getEmail().equals(newUser.getEmail()) && !user.getId().equals(newUser.getId())){
+            if (user.getEmail().equals(newUser.getEmail()) && !user.getId().equals(newUser.getId())) {
                 throw new ValidateException("A user with this email already exists");
             }
         }

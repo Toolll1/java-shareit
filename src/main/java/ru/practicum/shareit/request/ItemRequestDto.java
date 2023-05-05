@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request;
 
 import lombok.*;
-import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
