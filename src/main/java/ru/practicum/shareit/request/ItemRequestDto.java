@@ -7,12 +7,8 @@ import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
 
 /**
- * id — уникальный идентификатор запроса;
- * description — текст запроса, содержащий описание требуемой вещи;
- * requestor — пользователь, создавший запрос;
- * created — дата и время создания запроса.
+ * TODO Sprint add-item-requests.
  */
-
 @Setter
 @Getter
 @AllArgsConstructor
@@ -20,7 +16,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @ToString
 @Builder
-public class ItemRequest {
+public class ItemRequestDto {
 
     private Integer id;
     public String description;
