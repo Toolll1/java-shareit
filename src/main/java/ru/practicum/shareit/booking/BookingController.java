@@ -19,26 +19,31 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> findAll() {
+
         return bookingService.findAll();
     }
 
     @GetMapping("/{bookingId}")
     public Booking findById(@PathVariable int bookingId) {
+
         return bookingService.findById(bookingId);
     }
 
     @PostMapping
     public Booking create(@Valid @RequestBody Booking booking) {
+
         return bookingService.create(booking);
     }
 
     @PutMapping
     public Booking put(@Valid @RequestBody Booking booking) {
+
         return bookingService.put(booking);
     }
 
     @DeleteMapping("/{bookingId}")
     public void deleteBooking(@PathVariable int bookingId) {
+
         bookingService.deleteBooking(bookingId);
     }
 }

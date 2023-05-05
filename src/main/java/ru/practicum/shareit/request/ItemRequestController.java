@@ -18,26 +18,31 @@ public class ItemRequestController {
 
     @GetMapping
     public List<ItemRequest> findAll() {
+
         return itemRequestService.findAll();
     }
 
     @GetMapping("/{itemRequestId}")
     public ItemRequest findById(@PathVariable int itemRequestId) {
+
         return itemRequestService.findById(itemRequestId);
     }
 
     @PostMapping
     public ItemRequest create(@Valid @RequestBody ItemRequest itemRequest) {
+
         return itemRequestService.create(itemRequest);
     }
 
     @PutMapping
     public ItemRequest put(@Valid @RequestBody ItemRequest itemRequest) {
+
         return itemRequestService.put(itemRequest);
     }
 
     @DeleteMapping("/{itemRequestId}")
     public void deleteItemRequest(@PathVariable int itemRequestId) {
+
         itemRequestService.deleteItemRequest(itemRequestId);
     }
 }

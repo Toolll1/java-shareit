@@ -14,22 +14,27 @@ public class BookingService {
     private final BookingRepository bookingRepository;
 
     public List<Booking> findAll() {
+
         return bookingRepository.findAll();
     }
 
     public Booking findById(int bookingId) {
+
         return bookingRepository.findById(bookingId);
     }
 
     public Booking create(Booking booking) {
+
         return bookingRepository.create(booking);
     }
 
     public Booking put(Booking booking) {
+
         return bookingRepository.put(booking);
     }
 
     public void deleteBooking(int bookingId) {
+
         bookingRepository.deleteBooking(bookingId);
     }
 }
