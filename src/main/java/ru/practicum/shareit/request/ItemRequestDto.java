@@ -5,9 +5,6 @@ import lombok.*;
 import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Setter
 @Getter
 @AllArgsConstructor

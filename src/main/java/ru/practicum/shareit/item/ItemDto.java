@@ -5,9 +5,6 @@ import lombok.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Setter
 @Getter
 @AllArgsConstructor
