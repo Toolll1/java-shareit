@@ -9,7 +9,7 @@ interface ItemRequestRepository {
 
     ItemRequest create(ItemRequest itemRequest);
 
-    ItemRequest put(ItemRequest itemRequest);
+    ItemRequest update(ItemRequest itemRequest);
 
     void deleteItemRequest(int itemRequestId);
 }

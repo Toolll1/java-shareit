@@ -5,12 +5,6 @@ import lombok.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
-/**
- * id — уникальный идентификатор пользователя;
- * name — имя или логин пользователя;
- * email — адрес электронной почты (учтите, что два пользователя не могут иметь одинаковый адрес электронной почты).
- */
-
 @Setter
 @Getter
 @AllArgsConstructor

@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Component
 public class UserRepositoryImpl implements UserRepository {
-    Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
     private Integer id = 1;
 
     @Override
@@ -41,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User change(User newUser) {
+    public User update(User newUser) {
 
         for (User user : users.values()) {
             if (user.getEmail().equals(newUser.getEmail()) && !user.getId().equals(newUser.getId())) {

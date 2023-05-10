@@ -15,26 +15,40 @@ public class UserService {
 
     public List<User> findAll() {
 
-       return userRepository.findAll();
+        log.info("Received a request to search for all users");
+
+        return userRepository.findAll();
     }
 
     public User findById(int userId) {
 
+        log.info("Searching for a user with an id " + userId);
+
         return userRepository.findById(userId);
     }
 
-    public User create(User newUser) {
+    public User create(User user) {
 
-        return userRepository.create(newUser);
+        User newUser = userRepository.create(user);
+
+        log.info("I received a request to create a user " + newUser);
+
+        return newUser;
     }
 
-    public User change(User newUser) {
+    public User update(User user) {
 
-        return userRepository.change(newUser);
+        User newUser = userRepository.update(user);
+
+        log.info("I received a request to update a user\n" + "Old user " + user + "\nNew user " + newUser);
+
+        return newUser;
     }
 
     public void deleteUser(int userId) {
 
         userRepository.deleteUser(userId);
+
+        log.info("I received a request to delete a user with an id " + userId);
     }
 }

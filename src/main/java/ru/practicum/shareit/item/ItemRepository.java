@@ -9,7 +9,7 @@ interface ItemRepository {
 
     Item create(Item item);
 
-    Item change(Item item);
+    Item update(Item item);
 
     void deleteItem(int itemId);
 

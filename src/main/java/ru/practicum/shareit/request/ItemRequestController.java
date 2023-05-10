@@ -35,9 +35,9 @@ public class ItemRequestController {
     }
 
     @PutMapping
-    public ItemRequest put(@Valid @RequestBody ItemRequest itemRequest) {
+    public ItemRequest update(@Valid @RequestBody ItemRequest itemRequest) {
 
-        return itemRequestService.put(itemRequest);
+        return itemRequestService.update(itemRequest);
     }
 
     @DeleteMapping("/{itemRequestId}")

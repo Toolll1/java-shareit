@@ -28,9 +28,9 @@ public class BookingService {
         return bookingRepository.create(booking);
     }
 
-    public Booking put(Booking booking) {
+    public Booking update(Booking booking) {
 
-        return bookingRepository.put(booking);
+        return bookingRepository.update(booking);
     }
 
     public void deleteBooking(int bookingId) {

@@ -8,7 +8,7 @@ import java.util.*;
 @Component
 public class ItemRepositoryImpl implements ItemRepository {
 
-    Map<Integer, Item> items = new HashMap<>();
+    private final Map<Integer, Item> items = new HashMap<>();
     private Integer itemId = 1;
 
     @Override
@@ -17,7 +17,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         List<Item> itemsByOwnerId = new ArrayList<>();
 
         for (Item item : items.values()) {
-            if (item.getOwner().equals(userId)) {
+            if (item.getOwnerId().equals(userId)) {
                 itemsByOwnerId.add(item);
             }
         }
@@ -41,18 +41,18 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item change(Item newItem) {
+    public Item update(Item newItem) {
 
         Item item = items.get(newItem.getId());
 
-        if (!newItem.getOwner().equals(item.getOwner())) {
+        if (!newItem.getOwnerId().equals(item.getOwnerId())) {
             throw new ObjectNotFoundException("You can't change the owner");
         }
         if (newItem.getDescription() != null) {
             item.setDescription(newItem.getDescription());
         }
-        if (newItem.getRequest() != null) {
-            item.setRequest(newItem.getRequest());
+        if (newItem.getRequestId() != null) {
+            item.setRequestId(newItem.getRequestId());
         }
         if (newItem.getAvailable() != null) {
             item.setAvailable(newItem.getAvailable());

@@ -2,16 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.*;
 
-/**
- * id — уникальный идентификатор вещи;
- * name — краткое название;
- * description — развёрнутое описание;
- * available — статус о том, доступна или нет вещь для аренды;
- * owner — владелец вещи;
- * request — если вещь была создана по запросу другого пользователя, то в этом
- * поле будет храниться ссылка на соответствующий запрос
- */
-
 @Setter
 @Getter
 @AllArgsConstructor
@@ -25,6 +15,6 @@ public class Item {
     public String name;
     public String description;
     public Boolean available;
-    public Integer owner;
-    public String request;
+    public Integer ownerId;
+    public Integer requestId;
 }

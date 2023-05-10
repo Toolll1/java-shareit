@@ -9,7 +9,7 @@ interface UserRepository {
 
     User create(User newUser);
 
-    User change(User newUser);
+    User update(User newUser);
 
     void deleteUser(int userId);
 }

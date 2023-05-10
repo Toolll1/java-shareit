@@ -9,7 +9,7 @@ interface BookingRepository {
 
     Booking create(Booking booking);
 
-    Booking put(Booking booking);
+    Booking update(Booking booking);
 
     void deleteBooking(int bookingId);
 }

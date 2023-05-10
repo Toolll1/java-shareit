@@ -36,9 +36,9 @@ public class BookingController {
     }
 
     @PutMapping
-    public Booking put(@Valid @RequestBody Booking booking) {
+    public Booking update(@Valid @RequestBody Booking booking) {
 
-        return bookingService.put(booking);
+        return bookingService.update(booking);
     }
 
     @DeleteMapping("/{bookingId}")

@@ -2,33 +2,25 @@ package ru.practicum.shareit.request;
 
 import org.springframework.stereotype.Service;
 
-
-/**
- *     private Integer id;
- *     public String description;
- *     private Integer requestor;
- *     @Past
- *     private LocalDateTime created;
- */
 @Service
 public class ItemRequestMapper {
 
-    public ItemRequestDto itemRequestToDto(ItemRequest itemRequest) {
+    public ItemRequestDto objectToDto(ItemRequest itemRequest) {
 
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
-                .requestor(itemRequest.getRequestor())
+                .requestorId(itemRequest.getRequestorId())
                 .created(itemRequest.getCreated())
                 .build();
     }
 
-    public ItemRequest dtoToItemRequest(ItemRequestDto dto) {
+    public ItemRequest dtoToObject(ItemRequestDto dto) {
 
         return ItemRequest.builder()
                 .id(dto.getId())
                 .description(dto.getDescription())
-                .requestor(dto.getRequestor())
+                .requestorId(dto.getRequestorId())
                 .created(dto.getCreated())
                 .build();
     }

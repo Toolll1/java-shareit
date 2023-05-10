@@ -35,10 +35,10 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public User change(@RequestBody User newUser, @PathVariable int userId) {
+    public User update(@RequestBody User newUser, @PathVariable int userId) {
 
         newUser.setId(userId);
-        return userService.change(newUser);
+        return userService.update(newUser);
     }
 
     @DeleteMapping("/{userId}")

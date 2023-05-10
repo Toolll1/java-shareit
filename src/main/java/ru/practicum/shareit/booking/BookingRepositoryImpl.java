@@ -8,26 +8,31 @@ import java.util.List;
 public class BookingRepositoryImpl implements BookingRepository {
     @Override
     public List<Booking> findAll() {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public Booking findById(int bookingId) {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public Booking create(Booking booking) {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
-    public Booking put(Booking booking) {
-        return null;
+    public Booking update(Booking booking) {
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public void deleteBooking(int bookingId) {
 
+        throw new UnsupportedOperationException("method in development");
     }
 }

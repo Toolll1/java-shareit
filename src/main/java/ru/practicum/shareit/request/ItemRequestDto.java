@@ -19,7 +19,7 @@ public class ItemRequestDto {
 
     private Integer id;
     public String description;
-    private Integer requestor;
+    private Integer requestorId;
     @Past
     private LocalDateTime created;
 }

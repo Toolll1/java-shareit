@@ -8,26 +8,31 @@ import java.util.List;
 public class ItemRequestRepositoryImpl implements ItemRequestRepository {
     @Override
     public List<ItemRequest> findAll() {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public ItemRequest findById(int itemRequestId) {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public ItemRequest create(ItemRequest itemRequest) {
-        return null;
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
-    public ItemRequest put(ItemRequest itemRequest) {
-        return null;
+    public ItemRequest update(ItemRequest itemRequest) {
+
+        throw new UnsupportedOperationException("method in development");
     }
 
     @Override
     public void deleteItemRequest(int itemRequestId) {
 
+        throw new UnsupportedOperationException("method in development");
     }
 }

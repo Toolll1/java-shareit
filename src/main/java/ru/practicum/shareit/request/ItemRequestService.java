@@ -28,9 +28,9 @@ public class ItemRequestService {
         return itemRequestRepository.create(itemRequest);
     }
 
-    public ItemRequest put(ItemRequest itemRequest) {
+    public ItemRequest update(ItemRequest itemRequest) {
 
-        return itemRequestRepository.put(itemRequest);
+        return itemRequestRepository.update(itemRequest);
     }
 
     public void deleteItemRequest(int itemRequestId) {
