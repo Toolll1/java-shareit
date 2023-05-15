@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @ToString
 @Builder
-public class ItemRequest {
+public class ItemRequestDto {
 
     private Integer id;
     public String description;

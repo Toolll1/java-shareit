@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @ToString
 @Builder
-public class Booking {
+public class BookingDto {
 
     private Integer id;
     private LocalDateTime start;

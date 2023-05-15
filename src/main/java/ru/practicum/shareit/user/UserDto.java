@@ -12,7 +12,7 @@ import javax.validation.constraints.NotEmpty;
 @EqualsAndHashCode
 @ToString
 @Builder
-public class User {
+public class UserDto {
 
     private Integer id;
     public String name;
