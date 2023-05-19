@@ -121,19 +121,32 @@ public class BookingService {
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
         switch (state) {
-            case "ALL" -> bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
-            case "CURRENT" -> bookings = bookingRepository.
-                    findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
-            case "PAST" -> bookings = bookingRepository.
-                    findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
-            case "FUTURE" -> bookings = bookingRepository.
-                    findAllByBookerIdAndStartAfterOrderByStartDesc(userId, dateTime);
-            case "WAITING" -> bookings = bookingRepository.
-                    findAllByBookerIdAndBookingStatusOrderByStartDesc(userId, BookingStatus.WAITING);
-            case "REJECTED" -> bookings = bookingRepository.
-                    findAllByBookerIdAndBookingStatusInOrderByStartDesc(userId, rejected);
-            default -> throw new BadRequestException
-                    ("Unknown state: " + state);
+            case "ALL":
+                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                break;
+            case "CURRENT":
+                bookings = bookingRepository.
+                        findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
+                break;
+            case "PAST":
+                bookings = bookingRepository.
+                        findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
+                break;
+            case "FUTURE":
+                bookings = bookingRepository.
+                        findAllByBookerIdAndStartAfterOrderByStartDesc(userId, dateTime);
+                break;
+            case "WAITING":
+                bookings = bookingRepository.
+                        findAllByBookerIdAndBookingStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                break;
+            case "REJECTED":
+                bookings = bookingRepository.
+                        findAllByBookerIdAndBookingStatusInOrderByStartDesc(userId, rejected);
+                break;
+            default:
+                throw new BadRequestException
+                        ("Unknown state: " + state);
         }
 
         log.info("Getting a list of all bookings of the current user with an id {}, state {} \nresult: {}",
@@ -153,19 +166,32 @@ public class BookingService {
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
         switch (state) {
-            case "ALL" -> bookings = bookingRepository.findAllByOwnerIdOrderByStartDesc(userId);
-            case "CURRENT" -> bookings = bookingRepository.
-                    findAllByOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
-            case "PAST" -> bookings = bookingRepository.
-                    findAllByOwnerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
-            case "FUTURE" -> bookings = bookingRepository.
-                    findAllByOwnerIdAndStartAfterOrderByStartDesc(userId, dateTime);
-            case "WAITING" -> bookings = bookingRepository.
-                    findAllByOwnerIdAndBookingStatusOrderByStartDesc(userId, BookingStatus.WAITING);
-            case "REJECTED" -> bookings = bookingRepository.
-                    findAllByOwnerIdAndBookingStatusInOrderByStartDesc(userId, rejected);
-            default -> throw new BadRequestException
-                    ("Unknown state: " + state);
+            case "ALL":
+                bookings = bookingRepository.findAllByOwnerIdOrderByStartDesc(userId);
+                break;
+            case "CURRENT":
+                bookings = bookingRepository.
+                        findAllByOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
+                break;
+            case "PAST":
+                bookings = bookingRepository.
+                        findAllByOwnerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
+                break;
+            case "FUTURE":
+                bookings = bookingRepository.
+                        findAllByOwnerIdAndStartAfterOrderByStartDesc(userId, dateTime);
+                break;
+            case "WAITING":
+                bookings = bookingRepository.
+                        findAllByOwnerIdAndBookingStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                break;
+            case "REJECTED":
+                bookings = bookingRepository.
+                        findAllByOwnerIdAndBookingStatusInOrderByStartDesc(userId, rejected);
+                break;
+            default:
+                throw new BadRequestException
+                        ("Unknown state: " + state);
         }
 
         log.info("Getting a list of all bookings of the current users items with an id {}, state {} \nresult: {}",
