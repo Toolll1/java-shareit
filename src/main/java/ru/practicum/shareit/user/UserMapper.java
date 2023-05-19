@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserMapper {
 
-    public UserDto objectToDto(User user) {
+    public static UserDto objectToDto(User user) {
 
         return UserDto.builder()
                 .id(user.getId())
