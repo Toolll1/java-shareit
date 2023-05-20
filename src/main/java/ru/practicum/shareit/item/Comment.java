@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import ru.practicum.shareit.user.User;
 
@@ -25,11 +24,9 @@ public class Comment {
     @Column(name = "text", nullable = false, length = 320)
     private String text;
     @OneToOne
-   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "item_id")
     private Item item;
-    @ManyToOne//(fetch = FetchType.LAZY)
-   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User author;
     @Column(name = "created")

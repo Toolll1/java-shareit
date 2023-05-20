@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import ru.practicum.shareit.booking.BookingDtoMini;
 import ru.practicum.shareit.request.ItemRequest;
@@ -26,7 +25,6 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User owner;
     private ItemRequest request;
     private BookingDtoMini lastBooking;
