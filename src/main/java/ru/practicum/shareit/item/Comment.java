@@ -25,11 +25,11 @@ public class Comment {
     @Column(name = "text", nullable = false, length = 320)
     private String text;
     @OneToOne
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "item_id")
     private Item item;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne//(fetch = FetchType.LAZY)
+   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "user_id")
     private User author;
     @Column(name = "created")

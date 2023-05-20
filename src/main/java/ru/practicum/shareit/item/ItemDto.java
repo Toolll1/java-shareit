@@ -26,7 +26,7 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+   // @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User owner;
     private ItemRequest request;
     private BookingDtoMini lastBooking;
