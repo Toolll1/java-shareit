@@ -60,6 +60,7 @@ public class UserService {
     public UserDto update(UserDto user) {
 
         User oldUser = userRepository.findById(user.getId()).get();
+        User newUser;
 
         if (user.getName() != null) {
             oldUser.setName(user.getName());
@@ -68,7 +69,13 @@ public class UserService {
             oldUser.setEmail(user.getEmail());
         }
 
-        User newUser = userRepository.save(oldUser);
+        try {
+
+            newUser = userRepository.save(oldUser);
+        } catch (DataIntegrityViolationException e) {
+
+            throw new RuntimeException("user with this email already exists");
+        }
 
         log.info("I received a request to update a user\n" + newUser);
 

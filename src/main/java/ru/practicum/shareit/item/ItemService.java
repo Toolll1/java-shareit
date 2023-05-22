@@ -100,47 +100,29 @@ public class ItemService {
 
         ItemDto itemDto = ItemMapper.objectToDto(item);
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime correctLastBookingTime = null;
-        LocalDateTime correctNextBookingTime = null;
+        Booking lastBooking = bookingList.stream()
+                .filter(x -> x.getStart().isBefore(now))
+                .max(Comparator.comparing(Booking::getStart))
+                .orElse(null);
+        Booking nextBooking = bookingList.stream()
+                .filter(x -> x.getStart().isAfter(now))
+                .min(Comparator.comparing(Booking::getStart))
+                .orElse(null);
         List<CommentDto> commentList = commentRepository.findAllByItemInOrderByCreatedDesc(List.of(item)).stream()
                 .map(CommentMapper::objectToDto)
                 .collect(Collectors.toList());
 
         itemDto.setComments(Objects.requireNonNullElseGet(commentList, ArrayList::new));
 
-        if (bookingList.size() == 0) {
+        if (lastBooking == null) {
             itemDto.setLastBooking(null);
+        } else {
+            itemDto.setLastBooking(BookingMapper.objectToDtoMini(lastBooking));
+        }
+        if (nextBooking == null) {
             itemDto.setNextBooking(null);
         } else {
-
-            for (Booking booking : bookingList) {
-                if (booking.getStart().isBefore(now)) {
-                    correctLastBookingTime = booking.getStart();
-                    itemDto.setLastBooking(BookingMapper.objectToDtoMini(booking));
-                }
-                if (booking.getStart().isAfter(now)) {
-                    correctNextBookingTime = booking.getStart();
-                    itemDto.setNextBooking(BookingMapper.objectToDtoMini(booking));
-                }
-                if (itemDto.getNextBooking() != null && itemDto.getLastBooking() != null) {
-                    break;
-                }
-            }
-
-            for (Booking booking : bookingList) {
-                if (booking.getStart().isBefore(now) && correctLastBookingTime.isBefore(booking.getStart())) {
-
-                    correctLastBookingTime = booking.getStart();
-
-                    itemDto.setLastBooking(BookingMapper.objectToDtoMini(booking));
-                }
-                if (booking.getStart().isAfter(now) && correctNextBookingTime.isAfter(booking.getStart())) {
-
-                    correctNextBookingTime = booking.getStart();
-
-                    itemDto.setNextBooking(BookingMapper.objectToDtoMini(booking));
-                }
-            }
+            itemDto.setNextBooking(BookingMapper.objectToDtoMini(nextBooking));
         }
 
         return itemDto;
