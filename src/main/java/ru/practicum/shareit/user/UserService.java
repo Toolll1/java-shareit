@@ -42,15 +42,7 @@ public class UserService {
 
     public UserDto create(UserDto user) {
 
-        User newUser;
-
-        try {
-
-            newUser = userRepository.save(userMapper.dtoToObject(user));
-        } catch (DataIntegrityViolationException e) {
-
-            throw new RuntimeException("user with this email already exists");
-        }
+        User newUser = userRepository.save(userMapper.dtoToObject(user));
 
         log.info("I received a request to create a user " + newUser);
 
@@ -60,7 +52,6 @@ public class UserService {
     public UserDto update(UserDto user) {
 
         User oldUser = userRepository.findById(user.getId()).get();
-        User newUser;
 
         if (user.getName() != null) {
             oldUser.setName(user.getName());
@@ -69,13 +60,7 @@ public class UserService {
             oldUser.setEmail(user.getEmail());
         }
 
-        try {
-
-            newUser = userRepository.save(oldUser);
-        } catch (DataIntegrityViolationException e) {
-
-            throw new RuntimeException("user with this email already exists");
-        }
+        User newUser = userRepository.save(oldUser);
 
         log.info("I received a request to update a user\n" + newUser);
 
