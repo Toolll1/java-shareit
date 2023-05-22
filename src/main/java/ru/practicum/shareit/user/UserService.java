@@ -2,8 +2,10 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 
 import java.util.List;
@@ -41,7 +43,15 @@ public class UserService {
 
     public UserDto create(UserDto user) {
 
-        User newUser = userRepository.save(userMapper.dtoToObject(user));
+        User newUser;
+
+        try {
+
+            newUser = userRepository.save(userMapper.dtoToObject(user));
+        } catch (DataIntegrityViolationException e) {
+
+            throw new RuntimeException("user with this email already exists");
+        }
 
         log.info("I received a request to create a user " + newUser);
 

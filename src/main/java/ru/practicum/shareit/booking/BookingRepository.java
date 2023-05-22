@@ -24,8 +24,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findAllByBookerIdAndStatusInOrderByStartDesc(Integer userId, Set<BookingStatus> rejected);
 
-    @Query(value = "select b from Booking b where b.item.owner.id = ?1 order by b.start desc")
-    List<Booking> findAllByOwnerIdOrderByStartDesc(Integer userId);
+    List<Booking> findAllByItemOwnerIdOrderByStartDesc(Integer userId);
 
     @Query(value = "select b from Booking b where b.item.owner.id = ?1 and b.start < ?2 and b.end > ?3 order by b.start desc")
     List<Booking> findAllByOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(Integer userId, LocalDateTime dateTime, LocalDateTime dateTime1);
