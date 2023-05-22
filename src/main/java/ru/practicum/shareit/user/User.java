@@ -12,14 +12,14 @@ import javax.persistence.*;
 @ToString
 @Builder
 @Entity
-@Table(name = "USERS")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Integer id;
-    @Column(name = "user_name", nullable = false, length = 320)
-    private String userName;
+    @Column(name = "name", nullable = false, length = 320)
+    private String name;
     @Column(name = "email", nullable = false, length = 320, unique = true)
     private String email;
 }

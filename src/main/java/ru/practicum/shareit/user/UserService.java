@@ -53,7 +53,7 @@ public class UserService {
         User oldUser = userRepository.findById(user.getId()).get();
 
         if (user.getName() != null) {
-            oldUser.setUserName(user.getName());
+            oldUser.setName(user.getName());
         }
         if (user.getEmail() != null) {
             oldUser.setEmail(user.getEmail());
