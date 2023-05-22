@@ -30,9 +30,9 @@ public class UserService {
 
         log.info("Searching for a user with an id " + userId);
 
-        Optional <User> user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
 
-        if (user.isEmpty()){
+        if (user.isEmpty()) {
             throw new ObjectNotFoundException("There is no user with this id");
         }
 
