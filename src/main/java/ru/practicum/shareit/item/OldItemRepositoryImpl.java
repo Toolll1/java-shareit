@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 
 import java.util.*;
 
-@Component
-public class ItemRepositoryImpl implements ItemRepository {
+public class OldItemRepositoryImpl implements OldItemRepository{
 
     private final Map<Integer, Item> items = new HashMap<>();
     private Integer itemId = 1;
@@ -17,7 +15,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         List<Item> itemsByOwnerId = new ArrayList<>();
 
         for (Item item : items.values()) {
-            if (item.getOwnerId().equals(userId)) {
+            if (item.getOwner().getId().equals(userId)) {
                 itemsByOwnerId.add(item);
             }
         }
@@ -45,14 +43,14 @@ public class ItemRepositoryImpl implements ItemRepository {
 
         Item item = items.get(newItem.getId());
 
-        if (!newItem.getOwnerId().equals(item.getOwnerId())) {
+        if (!newItem.getOwner().getId().equals(item.getOwner().getId())) {
             throw new ObjectNotFoundException("You can't change the owner");
         }
         if (newItem.getDescription() != null) {
             item.setDescription(newItem.getDescription());
         }
-        if (newItem.getRequestId() != null) {
-            item.setRequestId(newItem.getRequestId());
+        if (newItem.getRequest() != null) {
+            item.getRequest().setId(newItem.getRequest().getId());
         }
         if (newItem.getAvailable() != null) {
             item.setAvailable(newItem.getAvailable());

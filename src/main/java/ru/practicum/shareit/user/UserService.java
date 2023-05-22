@@ -3,51 +3,72 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public List<User> findAll() {
+    public List<UserDto> findAll() {
 
         log.info("Received a request to search for all users");
 
-        return userRepository.findAll();
+        return userRepository.findAll().stream().map(UserMapper::objectToDto).collect(Collectors.toList());
     }
 
-    public User findById(int userId) {
+    public UserDto findById(int userId) {
 
         log.info("Searching for a user with an id " + userId);
 
-        return userRepository.findById(userId);
+        Optional <User> user = userRepository.findById(userId);
+
+        if (user.isEmpty()){
+            throw new ObjectNotFoundException("There is no user with this id");
+        }
+
+        return UserMapper.objectToDto(user.get());
     }
 
-    public User create(User user) {
+    public UserDto create(UserDto user) {
 
-        User newUser = userRepository.create(user);
+        User newUser = userRepository.save(userMapper.dtoToObject(user));
 
         log.info("I received a request to create a user " + newUser);
 
-        return newUser;
+        return UserMapper.objectToDto(newUser);
     }
 
-    public User update(User user) {
+    public UserDto update(UserDto user) {
 
-        User newUser = userRepository.update(user);
+        User oldUser = userRepository.findById(user.getId()).get();
 
-        log.info("I received a request to update a user\n" + "Old user " + user + "\nNew user " + newUser);
+        if (user.getName() != null) {
+            oldUser.setUserName(user.getName());
+        }
+        if (user.getEmail() != null) {
+            oldUser.setEmail(user.getEmail());
+        }
 
-        return newUser;
+        User newUser = userRepository.save(oldUser);
+
+        log.info("I received a request to update a user\n" + newUser);
+
+        return UserMapper.objectToDto(newUser);
     }
 
     public void deleteUser(int userId) {
 
-        userRepository.deleteUser(userId);
+        userRepository.deleteById(userId);
 
         log.info("I received a request to delete a user with an id " + userId);
     }

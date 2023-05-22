@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserMapper {
 
-    public UserDto objectToDto(User user) {
+    public static UserDto objectToDto(User user) {
 
         return UserDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .name(user.getName())
+                .name(user.getUserName())
                 .build();
     }
 
@@ -19,7 +19,7 @@ public class UserMapper {
         return User.builder()
                 .id(dto.getId())
                 .email(dto.getEmail())
-                .name(dto.getName())
+                .userName(dto.getName())
                 .build();
     }
 }

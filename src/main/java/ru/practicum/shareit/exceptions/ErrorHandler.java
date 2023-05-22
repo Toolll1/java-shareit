@@ -19,8 +19,17 @@ public class ErrorHandler {
     public ResponseEntity<Map<String, String>> handleObjectNotFound(final ObjectNotFoundException e) {
 
         return new ResponseEntity<>(
-                Map.of("message: ", e.getMessage()),
+                Map.of("message", e.getMessage()),
                 HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleObjectNotFound(final BadRequestException e) {
+
+        return new ResponseEntity<>(
+                Map.of("error", e.getMessage()),
+                HttpStatus.BAD_REQUEST
         );
     }
 
@@ -28,7 +37,7 @@ public class ErrorHandler {
     public ResponseEntity<Map<String, String>> handleRemainingErrors(final RuntimeException e) {
 
         return new ResponseEntity<>(
-                Map.of("message: ", e.getMessage()),
+                Map.of("message", e.getMessage()),
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }

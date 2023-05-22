@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request;
 
 import lombok.*;
+import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
@@ -15,8 +16,8 @@ import java.time.LocalDateTime;
 public class ItemRequestDto {
 
     private Integer id;
-    public String description;
-    private Integer requestorId;
+    private String description;
+    private User requestor;
     @Past
     private LocalDateTime created;
 }

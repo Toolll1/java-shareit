@@ -1,6 +1,6 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.stereotype.Component;
+import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.exceptions.ValidateException;
 
 import java.util.ArrayList;
@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
-public class UserRepositoryImpl implements UserRepository {
+public class OldUserRepositoryImpl implements OldUserRepository{
+
     private final Map<Integer, User> users = new HashMap<>();
     private Integer id = 1;
 
@@ -21,6 +21,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findById(int userId) {
+
+        User user = users.get(userId);
+
+        if (user == null){
+            throw new ObjectNotFoundException("There is no user with this id");
+        }
 
         return users.get(userId);
     }
@@ -51,8 +57,8 @@ public class UserRepositoryImpl implements UserRepository {
 
         User user = users.get(newUser.getId());
 
-        if (newUser.getName() != null) {
-            user.setName(newUser.getName());
+        if (newUser.getUserName() != null) {
+            user.setUserName(newUser.getUserName());
         }
         if (newUser.getEmail() != null) {
             user.setEmail(newUser.getEmail());

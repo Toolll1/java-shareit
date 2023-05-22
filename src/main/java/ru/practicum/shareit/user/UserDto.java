@@ -15,8 +15,8 @@ import javax.validation.constraints.NotEmpty;
 public class UserDto {
 
     private Integer id;
-    public String name;
+    private String name;
     @Email
     @NotEmpty
-    public String email;
+    private String email;
 }

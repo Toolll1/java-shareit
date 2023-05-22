@@ -1,6 +1,9 @@
 package ru.practicum.shareit.booking;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +20,9 @@ public class BookingDto {
     private LocalDateTime start;
     private LocalDateTime end;
     private Integer itemId;
-    private Integer bookerId;
-    private BookingStatus bookingStatus;
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Item item;
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private User booker;
+    private BookingStatus status;
 }
