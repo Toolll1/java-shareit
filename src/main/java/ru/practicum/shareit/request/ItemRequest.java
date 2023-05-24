@@ -1,8 +1,9 @@
 package ru.practicum.shareit.request;
 
 import lombok.*;
+import ru.practicum.shareit.user.User;
 
-import javax.validation.constraints.Past;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Setter
@@ -12,11 +13,18 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @ToString
 @Builder
+@Entity
+@Table(name = "requests")
 public class ItemRequest {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "request_id")
     private Integer id;
-    public String description;
-    private Integer requestorId;
-    @Past
+    @Column(name = "description", nullable = false, length = 320)
+    private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User requestor;
+    @Column(name = "created_date")
     private LocalDateTime created;
 }

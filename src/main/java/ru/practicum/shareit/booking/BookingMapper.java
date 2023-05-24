@@ -1,31 +1,71 @@
 package ru.practicum.shareit.booking;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.item.*;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.UserService;
 
 @Service
+@RequiredArgsConstructor
 public class BookingMapper {
 
-    public BookingDto objectToDto(Booking booking) {
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final ItemService itemService;
+    private final ItemMapper itemMapper;
+    private final ItemRepository itemRepository;
+
+    public static BookingDto objectToDto(Booking booking) {
 
         return BookingDto.builder()
                 .id(booking.getId())
                 .start(booking.getStart())
                 .end(booking.getEnd())
-                .itemId(booking.getItemId())
-                .bookerId(booking.getBookerId())
-                .bookingStatus(booking.getBookingStatus())
+                .itemId(booking.getItem().getId())
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .status(booking.getStatus())
                 .build();
     }
 
-    public Booking dtoToObject(BookingDto dto) {
+    public Booking dtoToObject(BookingDto dto, Integer userId) {
+
+        ItemDto itemDto = itemService.findById(dto.getItemId(), userId);
 
         return Booking.builder()
                 .id(dto.getId())
                 .start(dto.getStart())
                 .end(dto.getEnd())
-                .itemId(dto.getItemId())
-                .bookerId(dto.getBookerId())
-                .bookingStatus(dto.getBookingStatus())
+                .item(itemMapper.dtoToObject(itemDto, itemDto.getOwner().getId()))
+                .booker(userMapper.dtoToObject(userService.findById(userId)))
+                .status(dto.getStatus())
+                .build();
+    }
+
+    public Booking dtoToObject(BookingDto dto) {
+
+        Item item = itemRepository.findById(dto.getItemId()).get();
+
+        return Booking.builder()
+                .id(dto.getId())
+                .start(dto.getStart())
+                .end(dto.getEnd())
+                .item(item)
+                .booker(dto.getBooker())
+                .status(dto.getStatus())
+                .build();
+    }
+
+    public static BookingDtoMini objectToDtoMini(Booking booking) {
+
+        return BookingDtoMini.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .itemId(booking.getItem().getId())
+                .bookerId(booking.getBooker().getId())
+                .status(booking.getStatus())
                 .build();
     }
 }

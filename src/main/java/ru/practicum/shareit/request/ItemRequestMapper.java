@@ -10,7 +10,7 @@ public class ItemRequestMapper {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
-                .requestorId(itemRequest.getRequestorId())
+                .requestor(itemRequest.getRequestor())
                 .created(itemRequest.getCreated())
                 .build();
     }
@@ -20,7 +20,7 @@ public class ItemRequestMapper {
         return ItemRequest.builder()
                 .id(dto.getId())
                 .description(dto.getDescription())
-                .requestorId(dto.getRequestorId())
+                .requestor(dto.getRequestor())
                 .created(dto.getCreated())
                 .build();
     }
