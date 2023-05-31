@@ -43,7 +43,7 @@ public class ItemRequestService {
 
         ItemRequestDto oldItemRequestDto = findById(itemRequestDto.getId(), userId);
 
-        if (itemRequestDto.getDescription() != null){
+        if (itemRequestDto.getDescription() != null) {
             oldItemRequestDto.setDescription(itemRequestDto.getDescription());
         }
 
