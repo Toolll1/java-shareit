@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.*;
@@ -29,11 +30,11 @@ public class ItemService {
     private final CommentMapper commentMapper;
     private final BookingRepository bookingRepository;
 
-    public List<ItemDto> findAllByOwnerId(Integer userId) {
+    public List<ItemDto> findAllByOwnerId(Integer userId, Integer from, Integer size) {
 
         log.info("I received a request to search for all the items added by the user to the id " + userId);
 
-        Collection<Item> items = itemRepository.findAllByOwnerId(userId);
+        Collection<Item> items = itemRepository.findAllByOwnerId(userId, PageRequest.of(from / size, size));
         List<Booking> bookingList = bookingRepository.findAllByItemIn(items).stream()
                 .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
                         booking.getStatus().equals(BookingStatus.APPROVED))
@@ -138,7 +139,7 @@ public class ItemService {
         return itemDto;
     }
 
-    public ItemDto update(ItemDto dto, Integer userId) {
+    public ItemDto updateItem(ItemDto dto, Integer userId) {
 
         Item oldItem = itemRepository.findById(dto.getId()).get();
         Item item = itemMapper.dtoToObject(dto, userId);
@@ -183,7 +184,7 @@ public class ItemService {
         log.info("I received a request to delete a item with an id " + itemId);
     }
 
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
 
         log.info("I received a request to search for things whose name or description contains text: " + text);
 
@@ -191,7 +192,8 @@ public class ItemService {
             return new ArrayList<>();
         }
 
-        Set<Item> itemSet = new HashSet<>(itemRepository.search(text));
+        Set<Item> itemSet = new HashSet<>(itemRepository.search(text,
+                PageRequest.of(from / size, size)));
 
         return itemSet.stream()
                 .map(ItemMapper::objectToDto)
@@ -211,7 +213,8 @@ public class ItemService {
 
         for (Booking booking : bookingList) {
 
-            if (booking.getBooker().getId().equals(userId) && !booking.getStart().isAfter(dto.getCreated())) {
+            if (booking.getBooker().getId().equals(userId)
+                    && !booking.getStart().isAfter(dto.getCreated())) {
 
                 commentDto = CommentMapper.objectToDto(commentRepository.save(comment));
 

@@ -1,7 +1,10 @@
 package ru.practicum.shareit.exceptions;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.booking.BookingController;
@@ -29,6 +32,33 @@ public class ErrorHandler {
 
         return new ResponseEntity<>(
                 Map.of("error", e.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+
+        return new ResponseEntity<>(
+                Map.of("error", "Email exist, not created new user"),
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+
+        return new ResponseEntity<>(
+                Map.of("error", "The field should not be empty"),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleEmptyResultDataAccessException(final EmptyResultDataAccessException e) {
+
+        return new ResponseEntity<>(
+                Map.of("error", "There is no object with this idy"),
                 HttpStatus.BAD_REQUEST
         );
     }

@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.BadRequestException;
@@ -28,7 +31,10 @@ public class BookingService {
 
         log.info("Received a request to search for all bookings");
 
-        return bookingRepository.findAll().stream().map(BookingMapper::objectToDto).sorted(Comparator.comparing(BookingDto::getId)).collect(Collectors.toList());
+        return bookingRepository.findAll().stream()
+                .map(BookingMapper::objectToDto)
+                .sorted(Comparator.comparing(BookingDto::getId))
+                .collect(Collectors.toList());
     }
 
     public BookingDto findById(int bookingId, Integer userId) {
@@ -71,7 +77,11 @@ public class BookingService {
         if (oldBooking.getItem().getOwner().getId().equals(userId)) {
             throw new ObjectNotFoundException("You can't book your own items");
         }
-        if (oldBooking.getEnd() == null || oldBooking.getStart() == null || oldBooking.getEnd().isBefore(LocalDateTime.now()) || oldBooking.getStart().isBefore(LocalDateTime.now()) || oldBooking.getEnd().isBefore(oldBooking.getStart()) || oldBooking.getEnd().equals(oldBooking.getStart())) {
+        if (oldBooking.getEnd() == null || oldBooking.getStart() == null ||
+                oldBooking.getEnd().isBefore(LocalDateTime.now()) ||
+                oldBooking.getStart().isBefore(LocalDateTime.now()) ||
+                oldBooking.getEnd().isBefore(oldBooking.getStart()) ||
+                oldBooking.getEnd().equals(oldBooking.getStart())) {
             throw new BadRequestException("Incorrect start and/or end date of the lease");
         }
     }
@@ -111,30 +121,35 @@ public class BookingService {
         log.info("I received a request to delete a booking with an id " + bookingId);
     }
 
-    public List<BookingDto> getUsersBooking(Integer userId, String state) {
+    public List<BookingDto> getUsersBooking(Integer userId, String state, Integer from, Integer size) {
+
+        if (from < 0 || size <= 0) {
+            throw new BadRequestException("the from parameter must be greater than or equal to 0; size is greater than 0");
+        }
 
         List<Booking> bookings;
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
         LocalDateTime dateTime = LocalDateTime.now();
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
         switch (state) {
             case "ALL":
-                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                bookings = bookingRepository.findAllByBookerId(userId, pageable);
                 break;
             case "CURRENT":
-                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
+                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(userId, dateTime, dateTime, pageable);
                 break;
             case "PAST":
-                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
+                bookings = bookingRepository.findAllByBookerIdAndEndBefore(userId, dateTime, pageable);
                 break;
             case "FUTURE":
-                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, dateTime);
+                bookings = bookingRepository.findAllByBookerIdAndStartAfter(userId, dateTime, pageable);
                 break;
             case "WAITING":
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                bookings = bookingRepository.findAllByBookerIdAndStatus(userId, BookingStatus.WAITING, pageable);
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findAllByBookerIdAndStatusInOrderByStartDesc(userId, rejected);
+                bookings = bookingRepository.findAllByBookerIdAndStatusIn(userId, rejected, pageable);
                 break;
             default:
                 throw new BadRequestException("Unknown state: " + state);
@@ -149,26 +164,38 @@ public class BookingService {
         return bookings.stream().map(BookingMapper::objectToDto).collect(Collectors.toList());
     }
 
-    public List<BookingDto> getBookingsForUsersItems(Integer userId, String state) {
+    public List<BookingDto> getBookingsForUsersItems(Integer userId, String state, Integer from, Integer size) {
+
+        if (from < 0 || size <= 0) {
+            throw new BadRequestException("the from parameter must be greater than or equal to 0; size is greater than 0");
+        }
 
         List<Booking> bookings;
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
         LocalDateTime dateTime = LocalDateTime.now();
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
-        if (state.equals("ALL")) {
-            bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId);
-        } else if (state.equals("CURRENT")) {
-            bookings = bookingRepository.findAllByOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, dateTime, dateTime);
-        } else if (state.equals("PAST")) {
-            bookings = bookingRepository.findAllByOwnerIdAndEndBeforeOrderByStartDesc(userId, dateTime);
-        } else if (state.equals("FUTURE")) {
-            bookings = bookingRepository.findAllByOwnerIdAndStartAfterOrderByStartDesc(userId, dateTime);
-        } else if (state.equals("WAITING")) {
-            bookings = bookingRepository.findAllByOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
-        } else if (state.equals("REJECTED")) {
-            bookings = bookingRepository.findAllByOwnerIdAndStatusInOrderByStartDesc(userId, rejected);
-        } else {
-            throw new BadRequestException("Unknown state: " + state);
+        switch (state) {
+            case "ALL":
+                bookings = bookingRepository.findAllByItemOwnerId(userId, pageable);
+                break;
+            case "CURRENT":
+                bookings = bookingRepository.findAllByOwnerIdAndStartBeforeAndEndAfter(userId, dateTime, dateTime, pageable);
+                break;
+            case "PAST":
+                bookings = bookingRepository.findAllByOwnerIdAndEndBefore(userId, dateTime, pageable);
+                break;
+            case "FUTURE":
+                bookings = bookingRepository.findAllByOwnerIdAndStartAfter(userId, dateTime, pageable);
+                break;
+            case "WAITING":
+                bookings = bookingRepository.findAllByOwnerIdAndStatus(userId, BookingStatus.WAITING, pageable);
+                break;
+            case "REJECTED":
+                bookings = bookingRepository.findAllByOwnerIdAndStatusIn(userId, rejected, pageable);
+                break;
+            default:
+                throw new BadRequestException("Unknown state: " + state);
         }
 
         log.info("Getting a list of all bookings of the current users items with an id {}, state {} \nresult: {}", userId, state, bookings);
