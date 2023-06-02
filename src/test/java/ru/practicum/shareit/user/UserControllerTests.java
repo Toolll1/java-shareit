@@ -104,6 +104,7 @@ public class UserControllerTests {
         assertThrows(DataIntegrityViolationException.class, () -> userController.updateUser(
                 UserDto.builder().email("UserUserivi4@user.com").build(), 1));
     }
+
     @DirtiesContext
     @Test
     public void delete_returnsNothing_underNormalConditions() {
