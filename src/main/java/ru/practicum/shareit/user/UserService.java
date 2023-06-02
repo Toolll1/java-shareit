@@ -50,7 +50,7 @@ public class UserService {
 
     public UserDto update(UserDto user) {
 
-        User oldUser = userRepository.findById(user.getId()).get();
+        User oldUser = userMapper.dtoToObject(findById(user.getId()));
 
         if (user.getName() != null) {
             oldUser.setName(user.getName());

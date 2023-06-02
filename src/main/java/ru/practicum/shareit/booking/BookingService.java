@@ -114,9 +114,8 @@ public class BookingService {
 
         if (findById(bookingId, userId).getBooker().getId().equals(userId)) {
             bookingRepository.deleteById(bookingId);
-        } else {
-            throw new ValidateException("Only its booker can delete an booking");
         }
+
 
         log.info("I received a request to delete a booking with an id " + bookingId);
     }

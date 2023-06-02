@@ -121,10 +121,8 @@ public class ItemControllerTests {
                         .build(),
                 newUserDtoForBooking.getId());
 
-        assertThrows(BadRequestException.class, () -> {
-            itemController.createComment(CommentDto.builder().text("текст комментария").build(),
-                    newUserDtoForBooking.getId(), itemDto1.getId());
-        }, "You can't add a comment to an item you didn't book");
+        assertThrows(BadRequestException.class, () -> itemController.createComment(CommentDto.builder().text("текст комментария").build(),
+                newUserDtoForBooking.getId(), itemDto1.getId()), "You can't add a comment to an item you didn't book");
 
 
         TimeUnit.SECONDS.sleep(2);
@@ -157,13 +155,9 @@ public class ItemControllerTests {
 
         UserDto newUserDto = userController.createUser(userDto);
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            itemController.deleteItem(1, newUserDto.getId());
-        }, "There is no item with this id");
+        assertThrows(ObjectNotFoundException.class, () -> itemController.deleteItem(1, newUserDto.getId()), "There is no item with this id");
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            itemController.findItemById(1, newUserDto.getId());
-        }, "There is no item with this id");
+        assertThrows(ObjectNotFoundException.class, () -> itemController.findItemById(1, newUserDto.getId()), "There is no item with this id");
 
     }
 

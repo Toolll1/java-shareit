@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.ItemDto;
@@ -107,6 +108,9 @@ public class ItemRequestControllerTests {
         assertEquals(requests2.get(0).getDescription(), "Хотел бы воспользоваться щёткой для обуви");
         assertEquals(requests2.get(0).getRequestor().getId(), user1.getId());
         assertEquals(requests2.get(0).getItems().get(0).getId(), item.getId());
+
+        assertThrows(BadRequestException.class, () -> requestController.findAllRequest(user1.getId(), -1, 10));
+        assertThrows(BadRequestException.class, () -> requestController.findAllRequest(user1.getId(), 0, 0));
     }
 
     @DirtiesContext
@@ -118,9 +122,7 @@ public class ItemRequestControllerTests {
 
         requestController.deleteRequest(request.getId());
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            requestController.findRequestById(user.getId(), request.getId());
-        });
+        assertThrows(ObjectNotFoundException.class, () -> requestController.findRequestById(user.getId(), request.getId()));
         assertEquals(requestController.findAllRequest(user.getId()).size(), 0);
         assertEquals(requestController.findAllRequest(user.getId(), 0, 10).size(), 0);
     }
@@ -131,9 +133,7 @@ public class ItemRequestControllerTests {
 
         UserDto user = userController.createUser(userDto);
 
-        assertThrows(EmptyResultDataAccessException.class, () -> {
-            requestController.deleteRequest(999);
-        }, "There is no object with this idy");
+        assertThrows(EmptyResultDataAccessException.class, () -> requestController.deleteRequest(999), "There is no object with this idy");
         assertEquals(requestController.findAllRequest(user.getId()).size(), 0);
         assertEquals(requestController.findAllRequest(user.getId(), 0, 10).size(), 0);
     }

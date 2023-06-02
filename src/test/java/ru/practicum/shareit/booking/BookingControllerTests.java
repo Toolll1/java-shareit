@@ -75,9 +75,7 @@ public class BookingControllerTests {
     @Test
     public void findById_returnException_invalidId() {
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            bookingController.findBookingById(1, 999);
-        });
+        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(1, 999));
     }
 
 
@@ -105,15 +103,9 @@ public class BookingControllerTests {
 
         bookingController.deleteBooking(booking.getId(), booker.getId());
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            bookingController.findBookingById(booker.getId(), booking.getId());
-        });
-        assertThrows(ValidateException.class, () -> {
-            bookingController.getBookingsForUser(booker.getId(), "ALL", 0, 10);
-        });
-        assertThrows(ValidateException.class, () -> {
-            bookingController.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10);
-        });
+        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(booker.getId(), booking.getId()));
+        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUser(booker.getId(), "ALL", 0, 10));
+        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10));
     }
 
     @DirtiesContext
@@ -122,15 +114,9 @@ public class BookingControllerTests {
 
         UserDto user = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
 
-        assertThrows(ObjectNotFoundException.class, () -> {
-            bookingController.findBookingById(user.getId(), 999);
-        });
-        assertThrows(ValidateException.class, () -> {
-            bookingController.getBookingsForUser(user.getId(), "ALL", 0, 10);
-        });
-        assertThrows(ValidateException.class, () -> {
-            bookingController.getBookingsForUsersItems(user.getId(), "ALL", 0, 10);
-        });
+        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(user.getId(), 999));
+        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUser(user.getId(), "ALL", 0, 10));
+        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUsersItems(user.getId(), "ALL", 0, 10));
     }
 
     @DirtiesContext
