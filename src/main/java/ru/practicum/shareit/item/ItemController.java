@@ -32,9 +32,9 @@ public class ItemController {
 
     @PostMapping
     public ItemDto createItem(@Valid @RequestBody ItemDto dto,
-                          @RequestHeader("X-Sharer-User-Id") Integer userId) {
+                              @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
-        return itemService.create(dto, userId);
+        return itemService.createItem(dto, userId);
     }
 
     @PostMapping("/{itemId}/comment")

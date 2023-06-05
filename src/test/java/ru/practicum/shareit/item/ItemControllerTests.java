@@ -53,8 +53,12 @@ public class ItemControllerTests {
 
         UserDto newUserDto = userController.createUser(userDto);
         ItemDto itemDto1 = itemController.createItem(itemDto, newUserDto.getId());
+        itemDto1.setRequestId(1);                                                             //&!&!&!
         ItemDto itemDto2 = itemController.updateItem(itemDto1.getId(), ItemDto.builder()
                 .name("новая дрель").description("Простая новая дрель").available(false).build(), newUserDto.getId());
+
+        assertThrows(ObjectNotFoundException.class, () -> itemController.updateItem(itemDto1.getId(), ItemDto.builder()
+                .name("новая дрель").description("Простая новая дрель").available(false).build(), 999));
 
         assertEquals(itemDto2.getId(), 1);
         assertEquals(itemDto2.getName(), "новая дрель");
@@ -123,7 +127,6 @@ public class ItemControllerTests {
 
         assertThrows(BadRequestException.class, () -> itemController.createComment(CommentDto.builder().text("текст комментария").build(),
                 newUserDtoForBooking.getId(), itemDto1.getId()), "You can't add a comment to an item you didn't book");
-
 
         TimeUnit.SECONDS.sleep(2);
 

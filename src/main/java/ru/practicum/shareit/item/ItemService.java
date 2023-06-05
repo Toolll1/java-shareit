@@ -36,8 +36,7 @@ public class ItemService {
 
         Collection<Item> items = itemRepository.findAllByOwnerId(userId, PageRequest.of(from / size, size));
         List<Booking> bookingList = bookingRepository.findAllByItemIn(items).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
         Map<Item, List<Booking>> itemsMap = new HashMap<>();
         List<ItemDto> itemDtoList = new ArrayList<>();
@@ -90,14 +89,13 @@ public class ItemService {
         }
 
         List<Booking> bookingList = bookingRepository.findAllByItem(item).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
 
         return addData(items.get(), bookingList);
     }
 
-    private ItemDto addData(Item item, List<Booking> bookingList) {
+    public ItemDto addData(Item item, List<Booking> bookingList) {
 
         ItemDto itemDto = ItemMapper.objectToDto(item);
         LocalDateTime now = LocalDateTime.now();
@@ -129,7 +127,7 @@ public class ItemService {
         return itemDto;
     }
 
-    public ItemDto create(ItemDto dto, Integer userId) {
+    public ItemDto createItem(ItemDto dto, Integer userId) {
 
         Item item = itemMapper.dtoToObject(dto, userId);
         ItemDto itemDto = ItemMapper.objectToDto(itemRepository.save(item));
@@ -205,8 +203,7 @@ public class ItemService {
 
         Item item = itemMapper.dtoToObject(findById(itemId, userId), userId);
         List<Booking> bookingList = Objects.requireNonNullElseGet(bookingRepository.findAllByItemIn(List.of(item)).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList()), ArrayList::new);
         Comment comment = commentMapper.dtoToObject(dto, userId, item);
         CommentDto commentDto;

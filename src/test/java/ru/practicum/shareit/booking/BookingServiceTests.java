@@ -72,7 +72,6 @@ public class BookingServiceTests {
         assertThrows(BadRequestException.class, () -> bookingService.create(newBookingDto, booker.getId()));
     }
 
-    //your own items
     @DirtiesContext
     @Test
     public void create_returnsException_bookYourItems() {
