@@ -113,8 +113,8 @@ public class ItemServiceTests {
 
         ItemDto itemDto2 = itemService.createItem(ItemDto.builder().name("новая дрель").description("Простая новая дрель")
                 .available(false).build(), userDto.getId());
-        BookingDto booking1 = bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId()).
-                start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(3)).build(), userDto2.getId());
+        BookingDto booking1 = bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+                .start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(3)).build(), userDto2.getId());
         List<ItemDto> itemDtoList1 = itemService.findAllByOwnerId(userDto.getId(), 0, 10);
         List<ItemDto> itemDtoList2 = itemService.findAllByOwnerId(userDto.getId(), 1, 1);
 
@@ -234,10 +234,10 @@ public class ItemServiceTests {
         assertEquals(itemDto2.getRequestId(), itemDto.getRequestId());
         assertEquals(itemDto2.getComments(), new ArrayList<>());
 
-        Booking booking1 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId()).
-                start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
-        Booking booking2 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId()).
-                start(LocalDateTime.now().plusSeconds(3)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
+        Booking booking1 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+                .start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
+        Booking booking2 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+                .start(LocalDateTime.now().plusSeconds(3)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
 
         TimeUnit.SECONDS.sleep(2);
 
