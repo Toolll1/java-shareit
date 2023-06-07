@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -9,10 +10,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.exceptions.ValidateException;
-import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.user.UserController;
+import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,28 +28,28 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class BookingServiceTests {
 
     private final BookingService bookingService;
-    private final ItemController itemController;
-    private final UserController userController;
+    private final ItemService itemService;
+    private final UserService userService;
     private UserDto owner;
     private UserDto booker;
     private ItemDto item;
     private BookingDto booking;
 
-    private void creatingObjects() {
+    @BeforeEach
+    void beforeEach() {
 
-        owner = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
-        booker = userController.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
-        item = itemController.createItem(ItemDto.builder().name("дрель").description("Простая дрель").available(true).build(),
+        owner = userService.createUser(UserDto.builder().name("user").email("user@user.com").build());
+        booker = userService.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
+        item = itemService.createItem(ItemDto.builder().name("дрель").description("Простая дрель").available(true).build(),
                 owner.getId());
-        booking = bookingService.create(BookingDto.builder().itemId(1).start(LocalDateTime.now().plusSeconds(1))
+        booking = bookingService.createBooking(BookingDto.builder().itemId(1).start(LocalDateTime.now().plusSeconds(1))
                 .end(LocalDateTime.now().plusSeconds(3)).build(), booker.getId());
     }
+
 
     @DirtiesContext
     @Test
     public void create_returnsTheCorrectBookingDto_underNormalConditions() {
-
-        creatingObjects();
 
         assertEquals(booking.getId(), 1);
         assertEquals(booking.getStatus(), BookingStatus.WAITING);
@@ -62,51 +63,43 @@ public class BookingServiceTests {
     @Test
     public void create_returnsException_itemAvailableFalse() {
 
-        creatingObjects();
-
-        ItemDto newItemDto = itemController.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
+        ItemDto newItemDto = itemService.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
                 .available(false).build(), owner.getId());
         BookingDto newBookingDto = BookingDto.builder().itemId(newItemDto.getId()).start(LocalDateTime.now()
                 .plusSeconds(1)).end(LocalDateTime.now().plusSeconds(3)).build();
 
-        assertThrows(BadRequestException.class, () -> bookingService.create(newBookingDto, booker.getId()));
+        assertThrows(BadRequestException.class, () -> bookingService.createBooking(newBookingDto, booker.getId()));
     }
 
     @DirtiesContext
     @Test
     public void create_returnsException_bookYourItems() {
 
-        creatingObjects();
-
-        ItemDto newItemDto = itemController.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
+        ItemDto newItemDto = itemService.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
                 .available(true).build(), owner.getId());
         BookingDto newBookingDto = BookingDto.builder().itemId(newItemDto.getId()).start(LocalDateTime.now()
                 .plusSeconds(1)).end(LocalDateTime.now().plusSeconds(3)).build();
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.create(newBookingDto, owner.getId()));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.createBooking(newBookingDto, owner.getId()));
     }
 
     @DirtiesContext
     @Test
     public void create_returnsException_endIsNull() {
 
-        creatingObjects();
-
-        ItemDto newItemDto = itemController.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
+        ItemDto newItemDto = itemService.createItem(ItemDto.builder().name("дрель1").description("Простая дрель1")
                 .available(true).build(), owner.getId());
         BookingDto newBookingDto = BookingDto.builder().itemId(newItemDto.getId()).start(LocalDateTime.now()
                 .plusSeconds(1)).build();
 
-        assertThrows(BadRequestException.class, () -> bookingService.create(newBookingDto, booker.getId()));
+        assertThrows(BadRequestException.class, () -> bookingService.createBooking(newBookingDto, booker.getId()));
     }
 
     @DirtiesContext
     @Test
     public void findById_returnsTheCorrectBookingDto_underNormalConditions() {
 
-        creatingObjects();
-
-        BookingDto booking1 = bookingService.findById(booking.getId(), booker.getId());
+        BookingDto booking1 = bookingService.findBookingById(booking.getId(), booker.getId());
 
         assertEquals(booking1.getId(), 1);
         assertEquals(booking1.getStatus(), BookingStatus.WAITING);
@@ -116,19 +109,18 @@ public class BookingServiceTests {
         assertEquals(booking1.getItem().getName(), item.getName());
     }
 
+    @DirtiesContext
     @Test
     public void findById_returnException_invalidId() {
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.findById(999, 1));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.findBookingById(999, 1));
     }
 
     @DirtiesContext
     @Test
     public void updateBooking_returnsTheCorrectBookingDto_underAvailableFalse() {
 
-        creatingObjects();
-
-        BookingDto booking1 = bookingService.update(owner.getId(), booking.getId(), false);
+        BookingDto booking1 = bookingService.updateBooking(owner.getId(), booking.getId(), false);
 
         assertEquals(booking1.getId(), 1);
         assertEquals(booking1.getStatus(), BookingStatus.REJECTED);
@@ -137,18 +129,16 @@ public class BookingServiceTests {
         assertEquals(booking1.getItem().getId(), item.getId());
         assertEquals(booking1.getItem().getName(), item.getName());
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.update(owner.getId(), 999, false));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.updateBooking(owner.getId(), 999, false));
 
-        assertThrows(BadRequestException.class, () -> bookingService.update(owner.getId(), booking.getId(), true));
+        assertThrows(BadRequestException.class, () -> bookingService.updateBooking(owner.getId(), booking.getId(), true));
     }
 
     @DirtiesContext
     @Test
     public void updateBooking_returnsTheCorrectBookingDto_underAvailableTrue() {
 
-        creatingObjects();
-
-        BookingDto booking1 = bookingService.update(owner.getId(), booking.getId(), true);
+        BookingDto booking1 = bookingService.updateBooking(owner.getId(), booking.getId(), true);
 
         assertEquals(booking1.getId(), 1);
         assertEquals(booking1.getStatus(), BookingStatus.APPROVED);
@@ -157,20 +147,18 @@ public class BookingServiceTests {
         assertEquals(booking1.getItem().getId(), item.getId());
         assertEquals(booking1.getItem().getName(), item.getName());
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.update(booker.getId(), booking.getId(), true));
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.update(owner.getId(), 999, true));
-        assertThrows(BadRequestException.class, () -> bookingService.update(owner.getId(), booking.getId(), false));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.updateBooking(booker.getId(), booking.getId(), true));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.updateBooking(owner.getId(), 999, true));
+        assertThrows(BadRequestException.class, () -> bookingService.updateBooking(owner.getId(), booking.getId(), false));
     }
 
     @DirtiesContext
     @Test
     public void delete_returnsNothing_underNormalConditions() {
 
-        creatingObjects();
-
         bookingService.deleteBooking(booking.getId(), booker.getId());
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.findById(booking.getId(), booker.getId()));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.findBookingById(booking.getId(), booker.getId()));
         assertThrows(ValidateException.class, () -> bookingService.getUsersBooking(booker.getId(), "ALL", 0, 10));
         assertThrows(ValidateException.class, () -> bookingService.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10));
 
@@ -182,18 +170,14 @@ public class BookingServiceTests {
     @Test
     public void delete_returnsNothing_inTheAbsenceOfObjects() {
 
-        UserDto user = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
-
-        assertThrows(ObjectNotFoundException.class, () -> bookingService.findById(999, user.getId()));
-        assertThrows(ValidateException.class, () -> bookingService.getUsersBooking(user.getId(), "ALL", 0, 10));
-        assertThrows(ValidateException.class, () -> bookingService.getBookingsForUsersItems(user.getId(), "ALL", 0, 10));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.findBookingById(999, booker.getId()));
+        assertThrows(ValidateException.class, () -> bookingService.getUsersBooking(999, "ALL", 0, 10));
+        assertThrows(ValidateException.class, () -> bookingService.getBookingsForUsersItems(999, "ALL", 0, 10));
     }
 
     @DirtiesContext
     @Test
     public void getBookingsForUser_returnsTheCorrectBookingDtoList_underNormalConditions() {
-
-        creatingObjects();
 
         List<BookingDto> bookingDtoList = bookingService.getUsersBooking(booker.getId(), "ALL", 0, 10);
 
@@ -209,8 +193,6 @@ public class BookingServiceTests {
     @DirtiesContext
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateALL() {
-
-        creatingObjects();
 
         List<BookingDto> bookingDtoList = bookingService.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10);
 
@@ -229,8 +211,6 @@ public class BookingServiceTests {
     @DirtiesContext
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStatePAST() throws InterruptedException {
-
-        creatingObjects();
 
         TimeUnit.SECONDS.sleep(4);
 
@@ -252,8 +232,6 @@ public class BookingServiceTests {
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateWAITING() {
 
-        creatingObjects();
-
         List<BookingDto> bookingDtoList = bookingService.getBookingsForUsersItems(owner.getId(), "WAITING", 0, 10);
 
         assertEquals(bookingDtoList.get(0).getId(), booking.getId());
@@ -272,9 +250,7 @@ public class BookingServiceTests {
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateREJECTED() {
 
-        creatingObjects();
-
-        BookingDto newBookingDto = bookingService.update(owner.getId(), booking.getId(), false);
+        BookingDto newBookingDto = bookingService.updateBooking(owner.getId(), booking.getId(), false);
 
         List<BookingDto> bookingDtoList = bookingService.getBookingsForUsersItems(owner.getId(), "REJECTED", 0, 10);
 
@@ -294,8 +270,6 @@ public class BookingServiceTests {
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateFUTURE() {
 
-        creatingObjects();
-
         List<BookingDto> bookingDtoList = bookingService.getBookingsForUsersItems(owner.getId(), "FUTURE", 0, 10);
 
         assertEquals(bookingDtoList.get(0).getId(), booking.getId());
@@ -314,16 +288,12 @@ public class BookingServiceTests {
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateDefault() {
 
-        creatingObjects();
-
         assertThrows(BadRequestException.class, () -> bookingService.getBookingsForUsersItems(owner.getId(), "iwugdef", 0, 10));
     }
 
     @DirtiesContext
     @Test
     public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditionsStateCURRENT() throws InterruptedException {
-
-        creatingObjects();
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -345,8 +315,6 @@ public class BookingServiceTests {
     @Test
     public void findAll_returnsTheCorrectBookingDtoList_underNormalConditions() {
 
-        creatingObjects();
-
         List<BookingDto> bookingDtoList = bookingService.findAll();
 
         assertEquals(bookingDtoList.get(0).getId(), booking.getId());
@@ -361,8 +329,6 @@ public class BookingServiceTests {
     @DirtiesContext
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateALL() {
-
-        creatingObjects();
 
         List<BookingDto> bookingDtoList = bookingService.getUsersBooking(booker.getId(), "ALL", 0, 10);
 
@@ -382,16 +348,12 @@ public class BookingServiceTests {
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateDefault() {
 
-        creatingObjects();
-
         assertThrows(BadRequestException.class, () -> bookingService.getUsersBooking(booker.getId(), "iwugdef", 0, 10));
     }
 
     @DirtiesContext
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateFUTURE() {
-
-        creatingObjects();
 
         List<BookingDto> bookingDtoList = bookingService.getUsersBooking(booker.getId(), "FUTURE", 0, 10);
 
@@ -411,8 +373,6 @@ public class BookingServiceTests {
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateWAITING() {
 
-        creatingObjects();
-
         List<BookingDto> bookingDtoList = bookingService.getUsersBooking(booker.getId(), "WAITING", 0, 10);
 
         assertEquals(bookingDtoList.get(0).getId(), booking.getId());
@@ -431,9 +391,7 @@ public class BookingServiceTests {
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateREJECTED() {
 
-        creatingObjects();
-
-        BookingDto newBookingDto = bookingService.update(owner.getId(), booking.getId(), false);
+        BookingDto newBookingDto = bookingService.updateBooking(owner.getId(), booking.getId(), false);
 
         List<BookingDto> bookingDtoList = bookingService.getUsersBooking(booker.getId(), "REJECTED", 0, 10);
 
@@ -452,8 +410,6 @@ public class BookingServiceTests {
     @DirtiesContext
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStatePAST() throws InterruptedException {
-
-        creatingObjects();
 
         TimeUnit.SECONDS.sleep(4);
 
@@ -474,8 +430,6 @@ public class BookingServiceTests {
     @DirtiesContext
     @Test
     public void getUsersBooking_returnsTheCorrectBookingDtoList_underNormalConditionsStateCURRENT() throws InterruptedException {
-
-        creatingObjects();
 
         TimeUnit.SECONDS.sleep(2);
 

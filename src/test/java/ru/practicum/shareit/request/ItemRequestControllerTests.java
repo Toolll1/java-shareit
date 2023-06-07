@@ -1,140 +1,162 @@
 package ru.practicum.shareit.request;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.exceptions.BadRequestException;
-import ru.practicum.shareit.exceptions.ObjectNotFoundException;
-import ru.practicum.shareit.item.ItemController;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.user.UserDto;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.item.ItemDtoMini;
+import ru.practicum.shareit.user.User;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@WebMvcTest(controllers = ItemRequestController.class)
 public class ItemRequestControllerTests {
 
-    private final UserController userController;
-    private final ItemRequestController requestController;
-    private final ItemController itemController;
+    private final int requestId = 1;
 
-    UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
-    ItemRequestDto itemRequestDto = ItemRequestDto.builder().description("Хотел бы воспользоваться щёткой для обуви").build();
+    @Autowired
+    ObjectMapper mapper;
 
-    @DirtiesContext
+    @MockBean
+    ItemRequestService itemRequestService;
+
+    @Autowired
+    private MockMvc mvc;
+
+    private final ItemRequestDto itemRequestDto = ItemRequestDto.builder()
+            .id(requestId)
+            .description("Хотел бы воспользоваться щёткой для обуви")
+            .created(LocalDateTime.now())
+            .requestor(User.builder().id(1).name("user1").email("user1@user.com").build())
+            .items(List.of(ItemDtoMini.builder().id(1).name("дрель").description("Простая дрель").available(true).requestId(1).ownerId(2).build()))
+            .build();
+
     @Test
-    public void create_returnsTheCorrectItemRequestDto_underNormalConditions() {
+    void findAllRequest() throws Exception {
 
-        UserDto user = userController.createUser(userDto);
-        ItemRequestDto request = requestController.createRequest(itemRequestDto, user.getId());
-        ItemDto item = itemController.createItem(ItemDto.builder().name("дрель").requestId(request.getId())
-                .description("Простая дрель").available(true).build(), user.getId());
-        ItemRequestDto request1 = requestController.findRequestById(user.getId(), request.getId());
+        when(itemRequestService.findAllRequest(anyInt())).thenReturn(List.of(itemRequestDto));
 
-        assertEquals(request.getId(), 1);
-        assertEquals(request.getDescription(), "Хотел бы воспользоваться щёткой для обуви");
-        assertEquals(request.getRequestor().getId(), user.getId());
-        assertNull(request.getItems());
-        assertEquals(request1.getItems().size(), 1);
-        assertEquals(request1.getItems().get(0).getId(), item.getId());
+        mvc.perform(get("/requests")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].description").value(itemRequestDto.getDescription()))
+                .andExpect(jsonPath("$[0].items", hasSize(1)))
+                .andExpect(jsonPath("$[0].requestor").value(itemRequestDto.getRequestor()));
+
+        verify(itemRequestService, Mockito.times(1)).findAllRequest(anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void update_returnsTheCorrectItemRequestDto_underNormalConditions() {
+    void findAllRequest2() throws Exception {
 
-        UserDto user = userController.createUser(userDto);
-        requestController.createRequest(itemRequestDto, user.getId());
-        ItemRequestDto request1 = requestController.updateRequest(
-                ItemRequestDto.builder().description("Хотел бы воспользоваться щёткой для зубов").id(1).build(), user.getId());
+        when(itemRequestService.findAllRequest(anyInt(), anyInt(), anyInt())).thenReturn(List.of(itemRequestDto));
 
-        assertEquals(request1.getId(), 1);
-        assertEquals(request1.getDescription(), "Хотел бы воспользоваться щёткой для зубов");
-        assertEquals(request1.getRequestor().getId(), user.getId());
-        assertNull(request1.getItems());
+        mvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].description").value(itemRequestDto.getDescription()))
+                .andExpect(jsonPath("$[0].items", hasSize(1)))
+                .andExpect(jsonPath("$[0].requestor").value(itemRequestDto.getRequestor()));
+
+        verify(itemRequestService, Mockito.times(1)).findAllRequest(anyInt(), anyInt(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void find_returnsTheCorrectItemRequestDto_underNormalConditions() {
+    void findRequestById() throws Exception {
 
-        UserDto user = userController.createUser(userDto);
-        ItemRequestDto request = requestController.createRequest(itemRequestDto, user.getId());
-        ItemDto item = itemController.createItem(ItemDto.builder().name("дрель").requestId(request.getId())
-                .description("Простая дрель").available(true).build(), user.getId());
-        ItemRequestDto request1 = requestController.findRequestById(user.getId(), request.getId());
+        when(itemRequestService.findRequestById(anyInt(), anyInt())).thenReturn(itemRequestDto);
 
-        assertEquals(request1.getId(), 1);
-        assertEquals(request1.getItems().size(), 1);
-        assertEquals(request1.getDescription(), "Хотел бы воспользоваться щёткой для обуви");
-        assertEquals(request1.getRequestor().getId(), user.getId());
-        assertEquals(request1.getItems().get(0).getId(), item.getId());
+        mvc.perform(get("/requests/{itemRequestId}", requestId)
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(itemRequestDto.getId()))
+                .andExpect(jsonPath("description").value(itemRequestDto.getDescription()))
+                .andExpect(jsonPath("items", hasSize(1)))
+                .andExpect(jsonPath("requestor").value(itemRequestDto.getRequestor()));
+
+        verify(itemRequestService, times(1)).findRequestById(anyInt(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void findAll_returnsTheCorrectItemRequestDto_underNormalConditions() {
+    void deleteRequest() throws Exception {
 
-        UserDto user1 = userController.createUser(userDto);
-        ItemRequestDto request = requestController.createRequest(itemRequestDto, user1.getId());
-        ItemDto item = itemController.createItem(ItemDto.builder().name("дрель").requestId(request.getId())
-                .description("Простая дрель").available(true).build(), user1.getId());
+        mvc.perform(delete("/requests/{itemRequestId}", requestId))
+                .andDo(print())
+                .andExpect(status().isOk());
 
-        List<ItemRequestDto> requests1 = requestController.findAllRequest(user1.getId());
-
-        assertEquals(requests1.size(), 1);
-        assertEquals(requests1.get(0).getId(), 1);
-        assertEquals(requests1.get(0).getItems().size(), 1);
-        assertEquals(requests1.get(0).getDescription(), "Хотел бы воспользоваться щёткой для обуви");
-        assertEquals(requests1.get(0).getRequestor().getId(), user1.getId());
-        assertEquals(requests1.get(0).getItems().get(0).getId(), item.getId());
-
-        UserDto user2 = userController.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
-        List<ItemRequestDto> requests2 = requestController.findAllRequest(user2.getId(), 0, 10);
-
-        assertEquals(requests2.size(), 1);
-        assertEquals(requests2.get(0).getId(), 1);
-        assertEquals(requests2.get(0).getItems().size(), 1);
-        assertEquals(requests2.get(0).getDescription(), "Хотел бы воспользоваться щёткой для обуви");
-        assertEquals(requests2.get(0).getRequestor().getId(), user1.getId());
-        assertEquals(requests2.get(0).getItems().get(0).getId(), item.getId());
-
-        assertThrows(BadRequestException.class, () -> requestController.findAllRequest(user1.getId(), -1, 10));
-        assertThrows(BadRequestException.class, () -> requestController.findAllRequest(user1.getId(), 0, 0));
+        verify(itemRequestService, Mockito.times(1)).deleteRequest(requestId);
     }
 
-    @DirtiesContext
     @Test
-    public void delete_returnsNothing_underNormalConditions() {
+    void updateRequest() throws Exception {
 
-        UserDto user = userController.createUser(userDto);
-        ItemRequestDto request = requestController.createRequest(itemRequestDto, user.getId());
+        when(itemRequestService.updateRequest(any(), anyInt())).thenReturn(itemRequestDto);
 
-        requestController.deleteRequest(request.getId());
+        mvc.perform(put("/requests")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(itemRequestDto.getId()))
+                .andExpect(jsonPath("description").value(itemRequestDto.getDescription()))
+                .andExpect(jsonPath("items", hasSize(1)))
+                .andExpect(jsonPath("requestor").value(itemRequestDto.getRequestor()));
 
-        assertThrows(ObjectNotFoundException.class, () -> requestController.findRequestById(user.getId(), request.getId()));
-        assertEquals(requestController.findAllRequest(user.getId()).size(), 0);
-        assertEquals(requestController.findAllRequest(user.getId(), 0, 10).size(), 0);
+        verify(itemRequestService, times(1)).updateRequest(any(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void delete_returnsNothing_inTheAbsenceOfObjects() {
+    void createRequest() throws Exception {
 
-        UserDto user = userController.createUser(userDto);
+        when(itemRequestService.createRequest(any(), anyInt())).thenReturn(itemRequestDto);
 
-        assertThrows(EmptyResultDataAccessException.class, () -> requestController.deleteRequest(999), "There is no object with this idy");
-        assertEquals(requestController.findAllRequest(user.getId()).size(), 0);
-        assertEquals(requestController.findAllRequest(user.getId(), 0, 10).size(), 0);
+        mvc.perform(post("/requests")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(itemRequestDto.getId()))
+                .andExpect(jsonPath("description").value(itemRequestDto.getDescription()))
+                .andExpect(jsonPath("items", hasSize(1)))
+                .andExpect(jsonPath("requestor").value(itemRequestDto.getRequestor()));
+
+        verify(itemRequestService, times(1)).createRequest(any(), anyInt());
     }
 }

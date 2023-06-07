@@ -37,7 +37,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    public BookingDto findById(int bookingId, Integer userId) {
+    public BookingDto findBookingById(int bookingId, Integer userId) {
 
         log.info("Searching for a booking with an id " + bookingId);
 
@@ -50,7 +50,7 @@ public class BookingService {
         return BookingMapper.objectToDto(booking.get());
     }
 
-    public BookingDto create(BookingDto booking, Integer userId) {
+    public BookingDto createBooking(BookingDto booking, Integer userId) {
 
         booking.setStatus(BookingStatus.WAITING);
 
@@ -86,9 +86,9 @@ public class BookingService {
         }
     }
 
-    public BookingDto update(Integer userId, Integer bookingId, Boolean available) {
+    public BookingDto updateBooking(Integer userId, Integer bookingId, Boolean available) {
 
-        BookingDto bookingDto = findById(bookingId, userId);
+        BookingDto bookingDto = findBookingById(bookingId, userId);
 
         if (!bookingDto.getItem().getOwner().getId().equals(userId)) {
             throw new ObjectNotFoundException("You can't change the booker");
@@ -112,7 +112,7 @@ public class BookingService {
 
     public void deleteBooking(int bookingId, Integer userId) {
 
-        if (findById(bookingId, userId).getBooker().getId().equals(userId)) {
+        if (findBookingById(bookingId, userId).getBooker().getId().equals(userId)) {
             bookingRepository.deleteById(bookingId);
         }
 
@@ -127,7 +127,7 @@ public class BookingService {
         }
 
         List<Booking> bookings;
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
+        Pageable pageable = pageableCreator(from, size, "start");
         LocalDateTime dateTime = LocalDateTime.now();
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
@@ -170,7 +170,7 @@ public class BookingService {
         }
 
         List<Booking> bookings;
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
+        Pageable pageable = pageableCreator(from, size, "start");
         LocalDateTime dateTime = LocalDateTime.now();
         Set<BookingStatus> rejected = Set.of(BookingStatus.REJECTED, BookingStatus.CANCELED);
 
@@ -204,5 +204,10 @@ public class BookingService {
         }
 
         return bookings.stream().map(BookingMapper::objectToDto).collect(Collectors.toList());
+    }
+
+    private PageRequest pageableCreator(Integer from, Integer size, String sort) {
+
+        return PageRequest.of(from / size, size, Sort.by(sort).descending());
     }
 }

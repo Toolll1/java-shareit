@@ -27,7 +27,7 @@ public class ItemRequestMapper {
         return ItemRequest.builder()
                 .id(dto.getId())
                 .description(dto.getDescription())
-                .requestor(userMapper.dtoToObject(userService.findById(userId)))
+                .requestor(userMapper.dtoToObject(userService.findUserById(userId)))
                 .created(dto.getCreated())
                 .build();
     }

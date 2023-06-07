@@ -18,14 +18,14 @@ public class BookingController {
     public BookingDto findBookingById(@RequestHeader(value = "X-Sharer-User-Id") Integer userId,
                                       @PathVariable int bookingId) {
 
-        return bookingService.findById(bookingId, userId);
+        return bookingService.findBookingById(bookingId, userId);
     }
 
     @PostMapping
     public BookingDto createBooking(@Valid @RequestBody BookingDto booking,
                                     @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
-        return bookingService.create(booking, userId);
+        return bookingService.createBooking(booking, userId);
     }
 
     @PatchMapping("/{bookingId}")
@@ -33,7 +33,7 @@ public class BookingController {
                                     @PathVariable("bookingId") Integer bookingId,
                                     @RequestParam(name = "approved") Boolean available) {
 
-        return bookingService.update(userId, bookingId, available);
+        return bookingService.updateBooking(userId, bookingId, available);
     }
 
 
@@ -47,8 +47,8 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getBookingsForUser(@RequestHeader(value = "X-Sharer-User-Id") Integer userId,
                                                @RequestParam(name = "state", defaultValue = "ALL") String state,
-                                               @RequestParam(value = "from", defaultValue = "0", required = false) Integer from,
-                                               @RequestParam(value = "size", defaultValue = "10", required = false) Integer size) {
+                                               @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                               @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
         return bookingService.getUsersBooking(userId, state, from, size);
     }
@@ -56,8 +56,8 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getBookingsForUsersItems(@RequestHeader(value = "X-Sharer-User-Id") Integer userId,
                                                      @RequestParam(name = "state", defaultValue = "ALL") String state,
-                                                     @RequestParam(value = "from", defaultValue = "0", required = false) Integer from,
-                                                     @RequestParam(value = "size", defaultValue = "10", required = false) Integer size) {
+                                                     @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                                     @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
         return bookingService.getBookingsForUsersItems(userId, state, from, size);
     }

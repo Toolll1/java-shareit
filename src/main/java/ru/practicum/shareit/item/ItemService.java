@@ -30,11 +30,15 @@ public class ItemService {
     private final CommentMapper commentMapper;
     private final BookingRepository bookingRepository;
 
+    private PageRequest pageableCreator(Integer from, Integer size) {
+
+        return PageRequest.of(from / size, size);
+    }
+
     public List<ItemDto> findAllByOwnerId(Integer userId, Integer from, Integer size) {
 
         log.info("I received a request to search for all the items added by the user to the id " + userId);
-
-        Collection<Item> items = itemRepository.findAllByOwnerId(userId, PageRequest.of(from / size, size));
+        Collection<Item> items = itemRepository.findAllByOwnerId(userId, pageableCreator(from, size));
         List<Booking> bookingList = bookingRepository.findAllByItemIn(items).stream()
                 .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
@@ -64,7 +68,8 @@ public class ItemService {
         return itemDtoList;
     }
 
-    public ItemDto findById(int itemId, Integer userId) {
+
+    public ItemDto findItemById(int itemId, Integer userId) {
 
         log.info("Searching for a item with an id " + itemId);
 
@@ -173,7 +178,7 @@ public class ItemService {
 
     public void deleteItem(int itemId, Integer userId) {
 
-        if (findById(itemId, userId).getOwner().getId().equals(userId)) {
+        if (findItemById(itemId, userId).getOwner().getId().equals(userId)) {
             itemRepository.deleteById(itemId);
         } else {
             throw new ValidateException("Only its owner can delete an item");
@@ -182,7 +187,7 @@ public class ItemService {
         log.info("I received a request to delete a item with an id " + itemId);
     }
 
-    public List<ItemDto> search(String text, Integer from, Integer size) {
+    public List<ItemDto> searchItems(String text, Integer from, Integer size) {
 
         log.info("I received a request to search for things whose name or description contains text: " + text);
 
@@ -190,8 +195,7 @@ public class ItemService {
             return new ArrayList<>();
         }
 
-        Set<Item> itemSet = new HashSet<>(itemRepository.search(text,
-                PageRequest.of(from / size, size)));
+        Set<Item> itemSet = new HashSet<>(itemRepository.search(text, pageableCreator(from, size)));
 
         return itemSet.stream()
                 .map(ItemMapper::objectToDto)
@@ -201,7 +205,7 @@ public class ItemService {
 
     public CommentDto createComment(CommentDto dto, Integer userId, int itemId) {
 
-        Item item = itemMapper.dtoToObject(findById(itemId, userId), userId);
+        Item item = itemMapper.dtoToObject(findItemById(itemId, userId), userId);
         List<Booking> bookingList = Objects.requireNonNullElseGet(bookingRepository.findAllByItemIn(List.of(item)).stream()
                 .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList()), ArrayList::new);

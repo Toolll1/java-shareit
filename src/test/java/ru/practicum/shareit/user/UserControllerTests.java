@@ -1,125 +1,126 @@
 package ru.practicum.shareit.user;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.exceptions.ObjectNotFoundException;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class UserControllerTests {
+@WebMvcTest(controllers = UserController.class)
+class UserControllerTests {
 
-    private final UserController userController;
-    UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+    private final int userId = 1;
 
-    @DirtiesContext
-    @Test
-    public void create_returnsTheCorrectUserDto_underNormalConditions() {
+    @Autowired
+    ObjectMapper mapper;
 
-        UserDto userDto1 = userController.createUser(userDto);
+    @MockBean
+    UserService userService;
 
-        assertEquals(userDto1.getId(), 1);
-        assertEquals(userDto1.getName(), userDto.getName());
-        assertEquals(userDto1.getEmail(), userDto.getEmail());
-    }
+    @Autowired
+    private MockMvc mvc;
 
-    @DirtiesContext
-    @Test
-    public void create_returnsTheCorrectUserDto_withDuplicateEmail() {
-
-        userController.createUser(userDto);
-
-        assertThrows(DataIntegrityViolationException.class, () -> userController.createUser(UserDto.builder().name("user1").email("user@user.com").build()));
-    }
-
-    @DirtiesContext
-    @Test
-    public void findById_returnsTheCorrectUserDto_underNormalConditions() {
-
-        UserDto userDto1 = userController.createUser(userDto);
-        UserDto userDto2 = userController.findUserById(1);
-
-        assertEquals(userDto1.getId(), userDto2.getId());
-        assertEquals(userDto1.getName(), userDto2.getName());
-        assertEquals(userDto1.getEmail(), userDto2.getEmail());
-    }
+    private final UserDto userDto = UserDto.builder()
+            .id(userId)
+            .name("user")
+            .email("user@user.com")
+            .build();
 
     @Test
-    public void findById_returnException_invalidId() {
+    void createUser() throws Exception {
 
-        assertThrows(ObjectNotFoundException.class, () -> userController.findUserById(999));
-    }
+        when(userService.createUser(any())).thenReturn(userDto);
 
-    @Test
-    public void findAll_returnsEmptyList_inTheAbsenceOfObjects() {
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(1))
+                .andExpect(jsonPath("name").value(userDto.getName()))
+                .andExpect(jsonPath("email").value(userDto.getEmail()));
 
-        assertEquals(userController.findAllUsers().size(), 0);
-    }
-
-    @DirtiesContext
-    @Test
-    public void findAll_returnsTheCorrectList_underNormalConditions() {
-
-        UserDto userDto1 = userController.createUser(userDto);
-        userController.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
-        List<UserDto> userDtoList = userController.findAllUsers();
-
-        assertEquals(userDtoList.size(), 2);
-        assertEquals(userDtoList.get(0).getId(), userDto1.getId());
-        assertEquals(userDtoList.get(0).getName(), userDto1.getName());
-        assertEquals(userDtoList.get(0).getEmail(), userDto1.getEmail());
-    }
-
-    @DirtiesContext
-    @Test
-    public void update_returnsTheCorrectUserDto_underNormalConditions() {
-
-        userController.createUser(userDto);
-        UserDto newUserDto1 = userController.updateUser(
-                UserDto.builder().name("UserUserivi4").email("UserUserivi4@user.com").build(), 1);
-
-        assertEquals(newUserDto1.getId(), 1);
-        assertEquals(newUserDto1.getName(), "UserUserivi4");
-        assertEquals(newUserDto1.getEmail(), "UserUserivi4@user.com");
-    }
-
-    @DirtiesContext
-    @Test
-    public void update_returnsTheCorrectUserDto_withDuplicateEmail() {
-
-        userController.createUser(userDto);
-        userController.createUser(UserDto.builder().name("UserUserivi4").email("UserUserivi4@user.com").build());
-
-        assertThrows(DataIntegrityViolationException.class, () -> userController.updateUser(
-                UserDto.builder().email("UserUserivi4@user.com").build(), 1));
-    }
-
-    @DirtiesContext
-    @Test
-    public void delete_returnsNothing_underNormalConditions() {
-
-        userController.createUser(userDto);
-        userController.deleteUser(1);
-
-        assertEquals(userController.findAllUsers().size(), 0);
+        verify(userService, Mockito.times(1)).createUser(userDto);
     }
 
     @Test
-    public void delete_returnsNothing_inTheAbsenceOfObjects() {
+    void updateUser() throws Exception {
 
-        assertThrows(EmptyResultDataAccessException.class, () -> userController.deleteUser(1), "There is no object with this idy");
+        when(userService.updateUser(any())).thenReturn(userDto);
 
-        assertEquals(userController.findAllUsers().size(), 0);
+        mvc.perform(patch("/users/{userId}", userId)
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(1))
+                .andExpect(jsonPath("name").value(userDto.getName()))
+                .andExpect(jsonPath("email").value(userDto.getEmail()));
+
+        verify(userService, Mockito.times(1)).updateUser(userDto);
+    }
+
+    @Test
+    void findUserById() throws Exception {
+
+        when(userService.findUserById(anyInt())).thenReturn(userDto);
+
+        mvc.perform(get("/users/{userId}", userId)
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(1))
+                .andExpect(jsonPath("name").value(userDto.getName()))
+                .andExpect(jsonPath("email").value(userDto.getEmail()));
+
+        verify(userService, Mockito.times(1)).findUserById(1);
+    }
+
+    @Test
+    void findAllUsers() throws Exception {
+
+        when(userService.findAllUsers()).thenReturn(List.of(userDto));
+
+        mvc.perform(get("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value(userDto.getName()))
+                .andExpect(jsonPath("$[0].email").value(userDto.getEmail()));
+
+        verify(userService, Mockito.times(1)).findAllUsers();
+    }
+
+    @Test
+    void deleteUser() throws Exception {
+
+        mvc.perform(delete("/users/{userId}", userId))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(userService, Mockito.times(1)).deleteUser(userId);
     }
 }

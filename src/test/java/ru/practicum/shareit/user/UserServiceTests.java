@@ -20,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceTests {
 
-    private final UserService userController;
+    private final UserService userService;
     UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
 
     @DirtiesContext
     @Test
     public void create_returnsTheCorrectUserDto_underNormalConditions() {
 
-        UserDto userDto1 = userController.create(userDto);
+        UserDto userDto1 = userService.createUser(userDto);
 
         assertEquals(userDto1.getId(), 1);
         assertEquals(userDto1.getName(), userDto.getName());
@@ -38,17 +38,17 @@ public class UserServiceTests {
     @Test
     public void create_returnsTheCorrectUserDto_withDuplicateEmail() {
 
-        userController.create(userDto);
+        userService.createUser(userDto);
 
-        assertThrows(DataIntegrityViolationException.class, () -> userController.create(UserDto.builder().name("user1").email("user@user.com").build()));
+        assertThrows(DataIntegrityViolationException.class, () -> userService.createUser(UserDto.builder().name("user1").email("user@user.com").build()));
     }
 
     @DirtiesContext
     @Test
     public void findById_returnsTheCorrectUserDto_underNormalConditions() {
 
-        UserDto userDto1 = userController.create(userDto);
-        UserDto userDto2 = userController.findById(1);
+        UserDto userDto1 = userService.createUser(userDto);
+        UserDto userDto2 = userService.findUserById(1);
 
         assertEquals(userDto1.getId(), userDto2.getId());
         assertEquals(userDto1.getName(), userDto2.getName());
@@ -59,14 +59,14 @@ public class UserServiceTests {
     @Test
     public void findById_returnException_invalidId() {
 
-        assertThrows(ObjectNotFoundException.class, () -> userController.findById(999));
+        assertThrows(ObjectNotFoundException.class, () -> userService.findUserById(999));
     }
 
     @DirtiesContext
     @Test
     public void findAll_returnsEmptyList_inTheAbsenceOfObjects() {
 
-        List<UserDto> userDtoList = userController.findAll();
+        List<UserDto> userDtoList = userService.findAllUsers();
 
         assertEquals(userDtoList.size(), 0);
     }
@@ -75,9 +75,9 @@ public class UserServiceTests {
     @Test
     public void findAll_returnsTheCorrectList_underNormalConditions() {
 
-        UserDto userDto1 = userController.create(userDto);
-        userController.create(UserDto.builder().name("user1").email("user1@user.com").build());
-        List<UserDto> userDtoList = userController.findAll();
+        UserDto userDto1 = userService.createUser(userDto);
+        userService.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
+        List<UserDto> userDtoList = userService.findAllUsers();
 
         assertEquals(userDtoList.size(), 2);
         assertEquals(userDtoList.get(0).getId(), userDto1.getId());
@@ -89,8 +89,8 @@ public class UserServiceTests {
     @Test
     public void update_returnsTheCorrectUserDto_underNormalConditions() {
 
-        userController.create(userDto);
-        UserDto newUserDto1 = userController.update(
+        userService.createUser(userDto);
+        UserDto newUserDto1 = userService.updateUser(
                 UserDto.builder().id(1).name("UserUserivi4").email("UserUserivi4@user.com").build());
 
         assertEquals(newUserDto1.getId(), 1);
@@ -102,10 +102,10 @@ public class UserServiceTests {
     @Test
     public void update_returnsTheCorrectUserDto_withDuplicateEmail() {
 
-        userController.create(userDto);
-        userController.create(UserDto.builder().name("UserUserivi4").email("UserUserivi4@user.com").build());
+        userService.createUser(userDto);
+        userService.createUser(UserDto.builder().name("UserUserivi4").email("UserUserivi4@user.com").build());
 
-        assertThrows(DataIntegrityViolationException.class, () -> userController.update(
+        assertThrows(DataIntegrityViolationException.class, () -> userService.updateUser(
                 UserDto.builder().id(1).email("UserUserivi4@user.com").build()));
     }
 
@@ -113,17 +113,17 @@ public class UserServiceTests {
     @Test
     public void delete_returnsNothing_underNormalConditions() {
 
-        userController.create(userDto);
-        userController.deleteUser(1);
+        userService.createUser(userDto);
+        userService.deleteUser(1);
 
-        assertEquals(userController.findAll().size(), 0);
+        assertEquals(userService.findAllUsers().size(), 0);
     }
 
     @Test
     public void delete_returnsNothing_inTheAbsenceOfObjects() {
 
-        assertThrows(EmptyResultDataAccessException.class, () -> userController.deleteUser(1), "There is no object with this idy");
+        assertThrows(EmptyResultDataAccessException.class, () -> userService.deleteUser(1), "There is no object with this idy");
 
-        assertEquals(userController.findAll().size(), 0);
+        assertEquals(userService.findAllUsers().size(), 0);
     }
 }

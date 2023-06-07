@@ -1,155 +1,161 @@
 package ru.practicum.shareit.booking;
 
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.exceptions.ObjectNotFoundException;
-import ru.practicum.shareit.exceptions.ValidateException;
-import ru.practicum.shareit.item.ItemController;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.user.UserDto;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureTestDatabase
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@WebMvcTest(controllers = BookingController.class)
 public class BookingControllerTests {
 
-    private final BookingController bookingController;
-    private final ItemController itemController;
-    private final UserController userController;
-    private UserDto owner;
-    private UserDto booker;
-    private ItemDto item;
-    private BookingDto booking;
+    private final int bookingId = 1;
 
-    private void creatingObjects() {
+    @Autowired
+    ObjectMapper mapper;
 
-        owner = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
-        booker = userController.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
-        item = itemController.createItem(ItemDto.builder().name("дрель").description("Простая дрель").available(true).build(),
-                owner.getId());
-        booking = bookingController.createBooking(BookingDto.builder().itemId(1).start(LocalDateTime.now().plusSeconds(1))
-                .end(LocalDateTime.now().plusSeconds(30)).build(), booker.getId());
-    }
+    @MockBean
+    BookingService bookingService;
 
-    @DirtiesContext
+    @Autowired
+    private MockMvc mvc;
+
+    private final BookingDto bookingDto = BookingDto.builder()
+            .id(bookingId)
+            .booker(User.builder().id(1).name("user").email("user@user.com").build())
+            .status(BookingStatus.WAITING)
+            .item(Item.builder().id(1).name("name").description("description").build())
+            .itemId(1)
+            .start(LocalDateTime.now().plusSeconds(1))
+            .end(LocalDateTime.now().plusSeconds(3))
+            .build();
+
     @Test
-    public void create_returnsTheCorrectBookingDto_underNormalConditions() {
+    void createBooking() throws Exception {
 
-        creatingObjects();
+        when(bookingService.createBooking(any(), anyInt())).thenReturn(bookingDto);
 
-        assertEquals(booking.getId(), 1);
-        assertEquals(booking.getStatus(), BookingStatus.WAITING);
-        assertEquals(booking.getBooker().getId(), booker.getId());
-        assertEquals(booking.getBooker().getName(), booker.getName());
-        assertEquals(booking.getItem().getId(), item.getId());
-        assertEquals(booking.getItem().getName(), item.getName());
-    }
+        mvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(bookingDto.getId()))
+                .andExpect(jsonPath("status").value(bookingDto.getStatus().toString()))
+                .andExpect(jsonPath("booker").value(bookingDto.getBooker()))
+                .andExpect(jsonPath("item").value(bookingDto.getItem()));
 
-    @DirtiesContext
-    @Test
-    public void findById_returnsTheCorrectBookingDto_underNormalConditions() {
-
-        creatingObjects();
-
-        BookingDto booking1 = bookingController.findBookingById(booker.getId(), booking.getId());
-
-        assertEquals(booking1.getId(), 1);
-        assertEquals(booking1.getStatus(), BookingStatus.WAITING);
-        assertEquals(booking1.getBooker().getId(), booker.getId());
-        assertEquals(booking1.getBooker().getName(), booker.getName());
-        assertEquals(booking1.getItem().getId(), item.getId());
-        assertEquals(booking1.getItem().getName(), item.getName());
+        verify(bookingService, times(1)).createBooking(any(), anyInt());
     }
 
     @Test
-    public void findById_returnException_invalidId() {
+    void updateBooking() throws Exception {
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(1, 999));
+        when(bookingService.updateBooking(anyInt(), anyInt(), anyBoolean())).thenReturn(bookingDto);
+
+        mvc.perform(patch("/bookings/{bookingId}", bookingId).param("approved", "true")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(bookingDto.getId()))
+                .andExpect(jsonPath("status").value(bookingDto.getStatus().toString()))
+                .andExpect(jsonPath("booker").value(bookingDto.getBooker()))
+                .andExpect(jsonPath("item").value(bookingDto.getItem()));
+
+        verify(bookingService, times(1)).updateBooking(anyInt(), anyInt(), anyBoolean());
     }
 
-
-    @DirtiesContext
     @Test
-    public void updateBooking_returnsTheCorrectBookingDto_underNormalConditions() {
+    void deleteBooking() throws Exception {
 
-        creatingObjects();
+        mvc.perform(delete("/bookings/{bookingId}", bookingId).header("X-Sharer-User-Id", 1))
+                .andDo(print())
+                .andExpect(status().isOk());
 
-        BookingDto booking1 = bookingController.updateBooking(owner.getId(), booking.getId(), false);
-
-        assertEquals(booking1.getId(), 1);
-        assertEquals(booking1.getStatus(), BookingStatus.REJECTED);
-        assertEquals(booking1.getBooker().getId(), booker.getId());
-        assertEquals(booking1.getBooker().getName(), booker.getName());
-        assertEquals(booking1.getItem().getId(), item.getId());
-        assertEquals(booking1.getItem().getName(), item.getName());
+        verify(bookingService, times(1)).deleteBooking(anyInt(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void delete_returnsNothing_underNormalConditions() {
+    void findBookingById() throws Exception {
 
-        creatingObjects();
+        when(bookingService.findBookingById(anyInt(), anyInt())).thenReturn(bookingDto);
 
-        bookingController.deleteBooking(booking.getId(), booker.getId());
+        mvc.perform(get("/bookings/{bookingId}", bookingId)
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(bookingDto.getId()))
+                .andExpect(jsonPath("status").value(bookingDto.getStatus().toString()))
+                .andExpect(jsonPath("booker").value(bookingDto.getBooker()))
+                .andExpect(jsonPath("item").value(bookingDto.getItem()));
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(booker.getId(), booking.getId()));
-        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUser(booker.getId(), "ALL", 0, 10));
-        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10));
+        verify(bookingService, times(1)).findBookingById(anyInt(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void delete_returnsNothing_inTheAbsenceOfObjects() {
+    void getBookingsForUser() throws Exception {
 
-        UserDto user = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
+        when(bookingService.getUsersBooking(anyInt(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
-        assertThrows(ObjectNotFoundException.class, () -> bookingController.findBookingById(user.getId(), 999));
-        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUser(user.getId(), "ALL", 0, 10));
-        assertThrows(ValidateException.class, () -> bookingController.getBookingsForUsersItems(user.getId(), "ALL", 0, 10));
+        mvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$[0].booker").value(bookingDto.getBooker()))
+                .andExpect(jsonPath("$[0].item").value(bookingDto.getItem()));
+
+        verify(bookingService, times(1)).getUsersBooking(anyInt(), anyString(), anyInt(), anyInt());
     }
 
-    @DirtiesContext
     @Test
-    public void getBookingsForUser_returnsTheCorrectBookingDtoList_underNormalConditions() {
+    void getBookingsForUsersItems() throws Exception {
 
-        creatingObjects();
+        when(bookingService.getBookingsForUsersItems(anyInt(), anyString(), anyInt(), anyInt())).thenReturn(List.of(bookingDto));
 
-        List<BookingDto> bookingDtoList = bookingController.getBookingsForUser(booker.getId(), "ALL", 0, 10);
+        mvc.perform(get("/bookings/owner")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(bookingDto.getId()))
+                .andExpect(jsonPath("$[0].status").value(bookingDto.getStatus().toString()))
+                .andExpect(jsonPath("$[0].booker").value(bookingDto.getBooker()))
+                .andExpect(jsonPath("$[0].item").value(bookingDto.getItem()));
 
-        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
-        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
-        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
-        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
-        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
-        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
-        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
-    }
-
-    @DirtiesContext
-    @Test
-    public void getBookingsForUsersItems_returnsTheCorrectBookingDtoList_underNormalConditions() {
-
-        creatingObjects();
-
-        List<BookingDto> bookingDtoList = bookingController.getBookingsForUsersItems(owner.getId(), "ALL", 0, 10);
-
-        assertEquals(bookingDtoList.get(0).getId(), booking.getId());
-        assertEquals(bookingDtoList.get(0).getStatus(), booking.getStatus());
-        assertEquals(bookingDtoList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
-        assertEquals(bookingDtoList.get(0).getStart().getSecond(), booking.getStart().getSecond());
-        assertEquals(bookingDtoList.get(0).getItemId(), booking.getItemId());
-        assertEquals(bookingDtoList.get(0).getItem().getId(), booking.getItem().getId());
-        assertEquals(bookingDtoList.get(0).getBooker().getId(), booking.getBooker().getId());
+        verify(bookingService, times(1)).getBookingsForUsersItems(anyInt(), anyString(), anyInt(), anyInt());
     }
 }

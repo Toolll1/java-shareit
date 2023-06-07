@@ -30,7 +30,7 @@ public class ItemRequestService {
     private final UserService userService;
     private final ItemRepository itemRepository;
 
-    public ItemRequestDto create(ItemRequestDto itemRequestDto, Integer userId) {
+    public ItemRequestDto createRequest(ItemRequestDto itemRequestDto, Integer userId) {
 
         itemRequestDto.setCreated(LocalDateTime.now());
 
@@ -39,9 +39,9 @@ public class ItemRequestService {
         return ItemRequestMapper.objectToDto(itemRequest);
     }
 
-    public ItemRequestDto update(ItemRequestDto itemRequestDto, Integer userId) {
+    public ItemRequestDto updateRequest(ItemRequestDto itemRequestDto, Integer userId) {
 
-        ItemRequestDto oldItemRequestDto = findById(itemRequestDto.getId(), userId);
+        ItemRequestDto oldItemRequestDto = findRequestById(itemRequestDto.getId(), userId);
 
         if (itemRequestDto.getDescription() != null) {
             oldItemRequestDto.setDescription(itemRequestDto.getDescription());
@@ -52,9 +52,9 @@ public class ItemRequestService {
         return ItemRequestMapper.objectToDto(itemRequest);
     }
 
-    public List<ItemRequestDto> findAll(Integer userId) {
+    public List<ItemRequestDto> findAllRequest(Integer userId) {
 
-        userService.findById(userId);
+        userService.findUserById(userId);
 
         List<ItemRequestDto> itemRequestDtoList = itemRequestRepository.findAll().stream()
                 .map(ItemRequestMapper::objectToDto)
@@ -75,7 +75,7 @@ public class ItemRequestService {
         return itemRequestDtoList;
     }
 
-    public List<ItemRequestDto> findAll(Integer userId, Integer from, Integer size) {
+    public List<ItemRequestDto> findAllRequest(Integer userId, Integer from, Integer size) {
 
         if (from < 0 || size <= 0) {
             throw new BadRequestException("the from parameter must be greater than or equal to 0; size is greater than 0");
@@ -101,9 +101,9 @@ public class ItemRequestService {
         return itemRequestDtoList;
     }
 
-    public ItemRequestDto findById(int itemRequestId, Integer userId) {
+    public ItemRequestDto findRequestById(int itemRequestId, Integer userId) {
 
-        userService.findById(userId);
+        userService.findUserById(userId);
         Optional<ItemRequest> requests = itemRequestRepository.findById(itemRequestId);
 
         if (requests.isEmpty()) {
@@ -122,7 +122,7 @@ public class ItemRequestService {
     }
 
 
-    public void deleteItemRequest(int itemRequestId) {
+    public void deleteRequest(int itemRequestId) {
 
         itemRequestRepository.deleteById(itemRequestId);
     }

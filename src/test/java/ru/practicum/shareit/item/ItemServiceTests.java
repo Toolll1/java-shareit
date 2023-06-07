@@ -1,23 +1,21 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingController;
-import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.exceptions.ValidateException;
 import ru.practicum.shareit.item.comment.CommentDto;
-import ru.practicum.shareit.request.ItemRequestController;
 import ru.practicum.shareit.request.ItemRequestDto;
-import ru.practicum.shareit.user.UserController;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,33 +30,31 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ItemServiceTests {
 
     private final ItemService itemService;
-    private final UserController userController;
-    private final BookingController bookingController;
+    private final UserService userService;
+    private final BookingService bookingService;
     private final BookingMapper bookingMapper;
     private final ItemMapper itemMapper;
-    private final ItemRequestController itemRequestController;
+    private final ItemRequestService itemRequestService;
 
     private UserDto userDto;
     private UserDto userDto2;
     private ItemDto itemDto;
-    ItemRequestDto itemRequestDto;
+    private ItemRequestDto itemRequestDto;
 
-    private void creatingObjects() {
+    @BeforeEach
+    void beforeEach() {
 
-        userDto = userController.createUser(UserDto.builder().name("user").email("user@user.com").build());
-        userDto2 = userController.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
-        itemRequestDto = itemRequestController.createRequest(ItemRequestDto.builder()
+        userDto = userService.createUser(UserDto.builder().name("user").email("user@user.com").build());
+        userDto2 = userService.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
+        itemRequestDto = itemRequestService.createRequest(ItemRequestDto.builder()
                 .description("Хотел бы воспользоваться щёткой для обуви").build(), userDto2.getId());
         itemDto = itemService.createItem(ItemDto.builder().name("дрель").description("Простая дрель")
                 .requestId(itemRequestDto.getId()).available(true).build(), userDto.getId());
     }
 
-
     @DirtiesContext
     @Test
     public void create_returnsTheCorrectItemDto_underNormalConditions() {
-
-        creatingObjects();
 
         assertEquals(itemDto.getId(), 1);
         assertEquals(itemDto.getName(), "дрель");
@@ -71,8 +67,6 @@ public class ItemServiceTests {
     @DirtiesContext
     @Test
     public void update_returnsTheCorrectItemDto_underNormalConditions() {
-
-        creatingObjects();
 
         ItemDto itemDto2 = itemService.updateItem(ItemDto.builder().name("новая дрель").id(itemDto.getId())
                 .requestId(itemRequestDto.getId()).description("Простая новая дрель").available(false).build(), userDto.getId());
@@ -94,9 +88,7 @@ public class ItemServiceTests {
     @Test
     public void findById_returnsTheCorrectItemDto_underNormalConditions() {
 
-        creatingObjects();
-
-        ItemDto itemDto2 = itemService.findById(itemDto.getId(), userDto.getId());
+        ItemDto itemDto2 = itemService.findItemById(itemDto.getId(), userDto.getId());
 
         assertEquals(itemDto2.getId(), itemDto.getId());
         assertEquals(itemDto2.getName(), itemDto.getName());
@@ -109,11 +101,9 @@ public class ItemServiceTests {
     @Test
     public void findAllByOwnerId_returnsTheCorrectItemDtoList_underNormalConditions() {
 
-        creatingObjects();
-
         ItemDto itemDto2 = itemService.createItem(ItemDto.builder().name("новая дрель").description("Простая новая дрель")
                 .available(false).build(), userDto.getId());
-        BookingDto booking1 = bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+        BookingDto booking1 = bookingService.createBooking(BookingDto.builder().itemId(itemDto.getId())
                 .start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(3)).build(), userDto2.getId());
         List<ItemDto> itemDtoList1 = itemService.findAllByOwnerId(userDto.getId(), 0, 10);
         List<ItemDto> itemDtoList2 = itemService.findAllByOwnerId(userDto.getId(), 1, 1);
@@ -139,9 +129,7 @@ public class ItemServiceTests {
     @Test
     public void createComment_returnsTheCorrectCommentDto_underNormalConditions() throws InterruptedException {
 
-        creatingObjects();
-
-        bookingController.createBooking(
+        bookingService.createBooking(
                 BookingDto.builder()
                         .itemId(itemDto.getId())
                         .start(LocalDateTime.now().plusSeconds(1))
@@ -168,8 +156,6 @@ public class ItemServiceTests {
     @Test
     public void delete_returnsNothing_underNormalConditions() {
 
-        creatingObjects();
-
         assertThrows(ValidateException.class, () -> itemService.deleteItem(itemDto.getId(), 999));
 
         itemService.deleteItem(itemDto.getId(), userDto.getId());
@@ -181,24 +167,20 @@ public class ItemServiceTests {
     @Test
     public void delete_returnsNothing_inTheAbsenceOfObjects() {
 
-        creatingObjects();
-
         assertThrows(ObjectNotFoundException.class, () -> itemService.deleteItem(999, userDto.getId()));
-        assertThrows(ObjectNotFoundException.class, () -> itemService.findById(999, userDto.getId()));
+        assertThrows(ObjectNotFoundException.class, () -> itemService.findItemById(999, userDto.getId()));
     }
 
     @DirtiesContext
     @Test
     public void search_returnsTheCorrectList_underNormalConditions() {
 
-        creatingObjects();
-
         ItemDto itemDto2 = itemService.createItem(ItemDto.builder().name("дрель V100500").description("Непростая дрель")
                 .available(true).build(), userDto.getId());
 
-        List<ItemDto> itemDtoList1 = itemService.search("дрель", 0, 10);
-        List<ItemDto> itemDtoList2 = itemService.search("дрель", 1, 1);
-        List<ItemDto> itemDtoList3 = itemService.search("", 0, 10);
+        List<ItemDto> itemDtoList1 = itemService.searchItems("дрель", 0, 10);
+        List<ItemDto> itemDtoList2 = itemService.searchItems("дрель", 1, 1);
+        List<ItemDto> itemDtoList3 = itemService.searchItems("", 0, 10);
 
         assertEquals(itemDtoList1.size(), 2);
         assertEquals(itemDtoList1.get(0).getId(), itemDto.getId());
@@ -220,8 +202,6 @@ public class ItemServiceTests {
     @Test
     public void addData_returnsTheCorrectItemDto_underNormalConditions() throws InterruptedException {
 
-        creatingObjects();
-
         ItemDto itemDto2 = itemService.addData(itemMapper.dtoToObject(itemDto, userDto.getId()), new ArrayList<>());
 
         assertEquals(itemDto2.getId(), itemDto.getId());
@@ -234,9 +214,9 @@ public class ItemServiceTests {
         assertEquals(itemDto2.getRequestId(), itemDto.getRequestId());
         assertEquals(itemDto2.getComments(), new ArrayList<>());
 
-        Booking booking1 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+        Booking booking1 = bookingMapper.dtoToObject(bookingService.createBooking(BookingDto.builder().itemId(itemDto.getId())
                 .start(LocalDateTime.now().plusSeconds(1)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
-        Booking booking2 = bookingMapper.dtoToObject(bookingController.createBooking(BookingDto.builder().itemId(itemDto.getId())
+        Booking booking2 = bookingMapper.dtoToObject(bookingService.createBooking(BookingDto.builder().itemId(itemDto.getId())
                 .start(LocalDateTime.now().plusSeconds(3)).end(LocalDateTime.now().plusSeconds(5)).build(), userDto2.getId()));
 
         TimeUnit.SECONDS.sleep(2);

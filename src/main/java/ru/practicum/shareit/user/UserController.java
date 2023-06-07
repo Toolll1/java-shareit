@@ -16,26 +16,26 @@ public class UserController {
     @GetMapping
     public List<UserDto> findAllUsers() {
 
-        return userService.findAll();
+        return userService.findAllUsers();
     }
 
     @GetMapping("/{userId}")
     public UserDto findUserById(@PathVariable int userId) {
 
-        return userService.findById(userId);
+        return userService.findUserById(userId);
     }
 
     @PostMapping
     public UserDto createUser(@Valid @RequestBody UserDto newUser) {
 
-        return userService.create(newUser);
+        return userService.createUser(newUser);
     }
 
     @PatchMapping("/{userId}")
     public UserDto updateUser(@RequestBody UserDto newUser, @PathVariable int userId) {
 
         newUser.setId(userId);
-        return userService.update(newUser);
+        return userService.updateUser(newUser);
     }
 
     @DeleteMapping("/{userId}")

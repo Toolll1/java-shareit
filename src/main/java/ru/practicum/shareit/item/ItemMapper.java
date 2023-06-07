@@ -31,7 +31,6 @@ public class ItemMapper {
                     .owner(item.getOwner())
                     .name(item.getName())
                     .description(item.getDescription())
-                    //  .requestId(item.getRequest().getId())
                     .available(item.getAvailable())
                     .build();
         }
@@ -43,7 +42,7 @@ public class ItemMapper {
         if (dto.getRequestId() != null) {
             return Item.builder()
                     .id(dto.getId())
-                    .owner(userMapper.dtoToObject(userService.findById(userId)))
+                    .owner(userMapper.dtoToObject(userService.findUserById(userId)))
                     .name(dto.getName())
                     .description(dto.getDescription())
                     .request(itemRequestRepository.findById(dto.getRequestId()).get())
@@ -52,7 +51,7 @@ public class ItemMapper {
         } else {
             return Item.builder()
                     .id(dto.getId())
-                    .owner(userMapper.dtoToObject(userService.findById(userId)))
+                    .owner(userMapper.dtoToObject(userService.findUserById(userId)))
                     .name(dto.getName())
                     .description(dto.getDescription())
                     .available(dto.getAvailable())
