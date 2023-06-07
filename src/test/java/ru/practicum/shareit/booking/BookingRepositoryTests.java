@@ -74,6 +74,7 @@ public class BookingRepositoryTests {
     @DirtiesContext
     @Test
     public void updateBooking_returnsTheCorrectBooking_underNormalConditions() {
+
         //given
         Booking newBooking = booking = bookingRepository.save(Booking.builder().id(1).start(LocalDateTime.now().plusSeconds(1))
                 .end(LocalDateTime.now().plusSeconds(30)).booker(booker).item(item).status(BookingStatus.APPROVED).build());
@@ -158,11 +159,14 @@ public class BookingRepositoryTests {
     @Test
     public void findAllByOwnerIdAndEndBefore_returnsTheCorrectBookingList_underNormalConditions() {
 
+        //given
         Booking newBooking = bookingRepository.save(Booking.builder().id(5).start(LocalDateTime.now().minusHours(10))
                 .end(LocalDateTime.now().minusHours(3)).booker(booker).item(item).status(BookingStatus.WAITING).build());
 
+        //when
         List<Booking> bookingList = bookingRepository.findAllByOwnerIdAndEndBefore(owner.getId(), dateTime, pageable);
 
+        //then
         assertEquals(bookingList.get(0).getId(), newBooking.getId());
         assertEquals(bookingList.get(0).getStatus(), newBooking.getStatus());
         assertEquals(bookingList.get(0).getEnd().getSecond(), newBooking.getEnd().getSecond());
@@ -175,10 +179,14 @@ public class BookingRepositoryTests {
     @Test
     public void findAllByOwnerIdAndStartBeforeAndEndAfter_returnsTheCorrectBookingList_underNormalConditions() {
 
+        //given
         Booking newBooking = bookingRepository.save(Booking.builder().id(5).start(LocalDateTime.now().minusHours(1))
                 .end(LocalDateTime.now().plusSeconds(30)).booker(booker).item(item).status(BookingStatus.WAITING).build());
+
+        //when
         List<Booking> bookingList = bookingRepository.findAllByOwnerIdAndStartBeforeAndEndAfter(owner.getId(), dateTime, dateTime, pageable);
 
+        //then
         assertEquals(bookingList.get(0).getId(), newBooking.getId());
         assertEquals(bookingList.get(0).getStatus(), newBooking.getStatus());
         assertEquals(bookingList.get(0).getEnd().getSecond(), newBooking.getEnd().getSecond());

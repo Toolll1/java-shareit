@@ -27,8 +27,10 @@ public class UserServiceTests {
     @Test
     public void create_returnsTheCorrectUserDto_underNormalConditions() {
 
+        //when
         UserDto userDto1 = userService.createUser(userDto);
 
+        //then
         assertEquals(userDto1.getId(), 1);
         assertEquals(userDto1.getName(), userDto.getName());
         assertEquals(userDto1.getEmail(), userDto.getEmail());
@@ -38,8 +40,10 @@ public class UserServiceTests {
     @Test
     public void create_returnsTheCorrectUserDto_withDuplicateEmail() {
 
+        //given
         userService.createUser(userDto);
 
+        //then
         assertThrows(DataIntegrityViolationException.class, () -> userService.createUser(UserDto.builder().name("user1").email("user@user.com").build()));
     }
 
@@ -47,18 +51,23 @@ public class UserServiceTests {
     @Test
     public void findById_returnsTheCorrectUserDto_underNormalConditions() {
 
+        //given
         UserDto userDto1 = userService.createUser(userDto);
+
+        //when
         UserDto userDto2 = userService.findUserById(1);
 
-        assertEquals(userDto1.getId(), userDto2.getId());
-        assertEquals(userDto1.getName(), userDto2.getName());
-        assertEquals(userDto1.getEmail(), userDto2.getEmail());
+        //then
+        assertEquals(userDto2.getId(), userDto1.getId());
+        assertEquals(userDto2.getName(), userDto1.getName());
+        assertEquals(userDto2.getEmail(), userDto1.getEmail());
     }
 
     @DirtiesContext
     @Test
     public void findById_returnException_invalidId() {
 
+        //then
         assertThrows(ObjectNotFoundException.class, () -> userService.findUserById(999));
     }
 
@@ -66,8 +75,10 @@ public class UserServiceTests {
     @Test
     public void findAll_returnsEmptyList_inTheAbsenceOfObjects() {
 
+        //when
         List<UserDto> userDtoList = userService.findAllUsers();
 
+        //then
         assertEquals(userDtoList.size(), 0);
     }
 
@@ -75,10 +86,14 @@ public class UserServiceTests {
     @Test
     public void findAll_returnsTheCorrectList_underNormalConditions() {
 
+        //given
         UserDto userDto1 = userService.createUser(userDto);
         userService.createUser(UserDto.builder().name("user1").email("user1@user.com").build());
+
+        //when
         List<UserDto> userDtoList = userService.findAllUsers();
 
+        //then
         assertEquals(userDtoList.size(), 2);
         assertEquals(userDtoList.get(0).getId(), userDto1.getId());
         assertEquals(userDtoList.get(0).getName(), userDto1.getName());
@@ -89,22 +104,27 @@ public class UserServiceTests {
     @Test
     public void update_returnsTheCorrectUserDto_underNormalConditions() {
 
+        //given
         userService.createUser(userDto);
-        UserDto newUserDto1 = userService.updateUser(
-                UserDto.builder().id(1).name("UserUserivi4").email("UserUserivi4@user.com").build());
 
+        //when
+        UserDto newUserDto1 = userService.updateUser(UserDto.builder().id(1).name("User1").email("User1@user.com").build());
+
+        //then
         assertEquals(newUserDto1.getId(), 1);
-        assertEquals(newUserDto1.getName(), "UserUserivi4");
-        assertEquals(newUserDto1.getEmail(), "UserUserivi4@user.com");
+        assertEquals(newUserDto1.getName(), "User1");
+        assertEquals(newUserDto1.getEmail(), "User1@user.com");
     }
 
     @DirtiesContext
     @Test
     public void update_returnsTheCorrectUserDto_withDuplicateEmail() {
 
+        //given
         userService.createUser(userDto);
         userService.createUser(UserDto.builder().name("UserUserivi4").email("UserUserivi4@user.com").build());
 
+        //then
         assertThrows(DataIntegrityViolationException.class, () -> userService.updateUser(
                 UserDto.builder().id(1).email("UserUserivi4@user.com").build()));
     }
@@ -113,17 +133,19 @@ public class UserServiceTests {
     @Test
     public void delete_returnsNothing_underNormalConditions() {
 
+        //given
         userService.createUser(userDto);
         userService.deleteUser(1);
 
+        //then
         assertEquals(userService.findAllUsers().size(), 0);
     }
 
     @Test
     public void delete_returnsNothing_inTheAbsenceOfObjects() {
 
-        assertThrows(EmptyResultDataAccessException.class, () -> userService.deleteUser(1), "There is no object with this idy");
-
+        //then
+        assertThrows(EmptyResultDataAccessException.class, () -> userService.deleteUser(1));
         assertEquals(userService.findAllUsers().size(), 0);
     }
 }

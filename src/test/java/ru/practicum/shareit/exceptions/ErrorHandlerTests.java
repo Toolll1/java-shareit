@@ -16,8 +16,10 @@ public class ErrorHandlerTests {
     @Test
     public void handleValidateException() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleValidateException(new ValidateException("ValidateException"));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("message", "ValidateException"),
                 HttpStatus.INTERNAL_SERVER_ERROR
@@ -27,8 +29,10 @@ public class ErrorHandlerTests {
     @Test
     public void handleObjectNotFound() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleObjectNotFound(new ObjectNotFoundException("not found"));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("message", "not found"),
                 HttpStatus.NOT_FOUND
@@ -38,8 +42,10 @@ public class ErrorHandlerTests {
     @Test
     public void handleObjectNotFound2() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleObjectNotFound(new BadRequestException("not found"));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("error", "not found"),
                 HttpStatus.BAD_REQUEST
@@ -49,9 +55,11 @@ public class ErrorHandlerTests {
     @Test
     public void handleDataIntegrityViolationException() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleDataIntegrityViolationException(
                 new DataIntegrityViolationException("Email exist, not created new user"));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("error", "Email exist, not created new user"),
                 HttpStatus.CONFLICT
@@ -61,9 +69,11 @@ public class ErrorHandlerTests {
     @Test
     public void handleRemainingErrors() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleRemainingErrors(
                 new RuntimeException("RuntimeException"));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("message", "RuntimeException"),
                 HttpStatus.INTERNAL_SERVER_ERROR
@@ -73,9 +83,11 @@ public class ErrorHandlerTests {
     @Test
     public void handleEmptyResultDataAccessException() {
 
+        //given
         ResponseEntity<Map<String, String>> x = errorHandler.handleEmptyResultDataAccessException(
                 new EmptyResultDataAccessException(1));
 
+        //then
         assertEquals(x, new ResponseEntity<>(
                 Map.of("error", "There is no object with this idy"),
                 HttpStatus.BAD_REQUEST
