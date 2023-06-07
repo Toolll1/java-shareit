@@ -50,8 +50,10 @@ public class BookingRepositoryTests {
     @Test
     public void findBooking_returnsTheCorrectBooking_underNormalConditions() {
 
+        //then
         Booking booking1 = bookingRepository.findBooking(booking.getId(), booker.getId()).get();
 
+        //then
         assertEquals(booking1.getId(), 1);
         assertEquals(booking1.getStatus(), BookingStatus.WAITING);
         assertEquals(booking1.getBooker().getId(), booker.getId());
@@ -64,6 +66,7 @@ public class BookingRepositoryTests {
     @Test
     public void findBooking_returnException_invalidId() {
 
+        //then
         assertTrue(bookingRepository.findBooking(999, booker.getId()).isEmpty());
     }
 
@@ -71,12 +74,14 @@ public class BookingRepositoryTests {
     @DirtiesContext
     @Test
     public void updateBooking_returnsTheCorrectBooking_underNormalConditions() {
-
+        //given
         Booking newBooking = booking = bookingRepository.save(Booking.builder().id(1).start(LocalDateTime.now().plusSeconds(1))
                 .end(LocalDateTime.now().plusSeconds(30)).booker(booker).item(item).status(BookingStatus.APPROVED).build());
 
+        //when
         Booking booking1 = bookingRepository.save(newBooking);
 
+        //then
         assertEquals(booking1.getId(), 1);
         assertEquals(booking1.getStatus(), BookingStatus.APPROVED);
         assertEquals(booking1.getBooker().getId(), booker.getId());
@@ -89,8 +94,10 @@ public class BookingRepositoryTests {
     @Test
     public void delete_returnsNothing_underNormalConditions() {
 
+        //when
         bookingRepository.deleteById(booking.getId());
 
+        //then
         assertTrue(bookingRepository.findBooking(booking.getId(), booker.getId()).isEmpty());
     }
 
@@ -98,11 +105,14 @@ public class BookingRepositoryTests {
     @Test
     public void findAllByOwnerIdAndStatusIn_returnsTheCorrectBookingList_underNormalConditions() {
 
+        //given
         Booking newBooking = bookingRepository.save(Booking.builder().id(5).start(LocalDateTime.now().minusHours(10))
                 .end(LocalDateTime.now().minusHours(3)).booker(booker).item(item).status(BookingStatus.REJECTED).build());
 
+        //when
         List<Booking> bookingList = bookingRepository.findAllByOwnerIdAndStatusIn(owner.getId(), rejected, pageable);
 
+        //then
         assertEquals(bookingList.get(0).getId(), newBooking.getId());
         assertEquals(bookingList.get(0).getStatus(), newBooking.getStatus());
         assertEquals(bookingList.get(0).getEnd().getSecond(), newBooking.getEnd().getSecond());
@@ -116,8 +126,10 @@ public class BookingRepositoryTests {
     @Test
     public void findAllByOwnerIdAndStatus_returnsTheCorrectBookingList_underNormalConditions() {
 
+        //when
         List<Booking> bookingList = bookingRepository.findAllByOwnerIdAndStatus(owner.getId(), BookingStatus.WAITING, pageable);
 
+        //then
         assertEquals(bookingList.get(0).getId(), booking.getId());
         assertEquals(bookingList.get(0).getStatus(), booking.getStatus());
         assertEquals(bookingList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
@@ -130,8 +142,10 @@ public class BookingRepositoryTests {
     @Test
     public void findAllByOwnerIdAndStartAfter_returnsTheCorrectBookingList_underNormalConditions() {
 
+        //when
         List<Booking> bookingList = bookingRepository.findAllByOwnerIdAndStartAfter(owner.getId(), dateTime, pageable);
 
+        //then
         assertEquals(bookingList.get(0).getId(), booking.getId());
         assertEquals(bookingList.get(0).getStatus(), booking.getStatus());
         assertEquals(bookingList.get(0).getEnd().getSecond(), booking.getEnd().getSecond());
