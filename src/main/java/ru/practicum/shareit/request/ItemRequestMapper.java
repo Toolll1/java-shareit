@@ -1,11 +1,18 @@
 package ru.practicum.shareit.request;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.UserService;
 
 @Service
+@RequiredArgsConstructor
 public class ItemRequestMapper {
 
-    public ItemRequestDto objectToDto(ItemRequest itemRequest) {
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    public static ItemRequestDto objectToDto(ItemRequest itemRequest) {
 
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
@@ -15,12 +22,12 @@ public class ItemRequestMapper {
                 .build();
     }
 
-    public ItemRequest dtoToObject(ItemRequestDto dto) {
+    public ItemRequest dtoToObject(ItemRequestDto dto, Integer userId) {
 
         return ItemRequest.builder()
                 .id(dto.getId())
                 .description(dto.getDescription())
-                .requestor(dto.getRequestor())
+                .requestor(userMapper.dtoToObject(userService.findUserById(userId)))
                 .created(dto.getCreated())
                 .build();
     }

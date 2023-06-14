@@ -19,14 +19,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public List<UserDto> findAll() {
+    public List<UserDto> findAllUsers() {
 
         log.info("Received a request to search for all users");
 
         return userRepository.findAll().stream().map(UserMapper::objectToDto).collect(Collectors.toList());
     }
 
-    public UserDto findById(int userId) {
+    public UserDto findUserById(int userId) {
 
         log.info("Searching for a user with an id " + userId);
 
@@ -39,7 +39,7 @@ public class UserService {
         return UserMapper.objectToDto(user.get());
     }
 
-    public UserDto create(UserDto user) {
+    public UserDto createUser(UserDto user) {
 
         User newUser = userRepository.save(userMapper.dtoToObject(user));
 
@@ -48,9 +48,9 @@ public class UserService {
         return UserMapper.objectToDto(newUser);
     }
 
-    public UserDto update(UserDto user) {
+    public UserDto updateUser(UserDto user) {
 
-        User oldUser = userRepository.findById(user.getId()).get();
+        User oldUser = userMapper.dtoToObject(findUserById(user.getId()));
 
         if (user.getName() != null) {
             oldUser.setName(user.getName());

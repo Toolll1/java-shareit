@@ -31,7 +31,7 @@ public class CommentMapper {
                 .id(dto.getId())
                 .text(dto.getText())
                 .item(item)
-                .author(userMapper.dtoToObject(userService.findById(userId)))
+                .author(userMapper.dtoToObject(userService.findUserById(userId)))
                 .created(dto.getCreated())
                 .build();
     }

@@ -14,32 +14,43 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @GetMapping
-    public List<ItemRequest> findAll() {
+    public List<ItemRequestDto> findAllRequest(@RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
 
-        return itemRequestService.findAll();
+        return itemRequestService.findAllRequest(userId);
+    }
+
+    @GetMapping("/all")
+    public List<ItemRequestDto> findAllRequest(@RequestHeader(value = "X-Sharer-User-Id") Integer userId,
+                                               @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                               @RequestParam(value = "size", defaultValue = "10") Integer size) {
+
+        return itemRequestService.findAllRequest(userId, from, size);
     }
 
     @GetMapping("/{itemRequestId}")
-    public ItemRequest findById(@PathVariable int itemRequestId) {
+    public ItemRequestDto findRequestById(@RequestHeader(value = "X-Sharer-User-Id") Integer userId,
+                                          @PathVariable int itemRequestId) {
 
-        return itemRequestService.findById(itemRequestId);
+        return itemRequestService.findRequestById(itemRequestId, userId);
     }
 
     @PostMapping
-    public ItemRequest create(@Valid @RequestBody ItemRequest itemRequest) {
+    public ItemRequestDto createRequest(@Valid @RequestBody ItemRequestDto itemRequestDto,
+                                        @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
 
-        return itemRequestService.create(itemRequest);
+        return itemRequestService.createRequest(itemRequestDto, userId);
     }
 
     @PutMapping
-    public ItemRequest update(@Valid @RequestBody ItemRequest itemRequest) {
+    public ItemRequestDto updateRequest(@Valid @RequestBody ItemRequestDto itemRequestDto,
+                                        @RequestHeader(value = "X-Sharer-User-Id") Integer userId) {
 
-        return itemRequestService.update(itemRequest);
+        return itemRequestService.updateRequest(itemRequestDto, userId);
     }
 
     @DeleteMapping("/{itemRequestId}")
-    public void deleteItemRequest(@PathVariable int itemRequestId) {
+    public void deleteRequest(@PathVariable int itemRequestId) {
 
-        itemRequestService.deleteItemRequest(itemRequestId);
+        itemRequestService.deleteRequest(itemRequestId);
     }
 }

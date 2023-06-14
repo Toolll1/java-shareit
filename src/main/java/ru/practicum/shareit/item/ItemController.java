@@ -16,25 +16,31 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public List<ItemDto> findAllItemsByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                               @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                               @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-        return itemService.findAllByOwnerId(userId);
+        return itemService.findAllByOwnerId(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto findById(@PathVariable int itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemDto findItemById(@PathVariable int itemId,
+                                @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
-        return itemService.findById(itemId, userId);
+        return itemService.findItemById(itemId, userId);
     }
 
     @PostMapping
-    public ItemDto createItem(@Valid @RequestBody ItemDto dto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemDto createItem(@Valid @RequestBody ItemDto dto,
+                              @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
-        return itemService.create(dto, userId);
+        return itemService.createItem(dto, userId);
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto createComment(@Valid @RequestBody CommentDto dto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable int itemId) {
+    public CommentDto createComment(@Valid @RequestBody CommentDto dto,
+                                    @RequestHeader("X-Sharer-User-Id") Integer userId,
+                                    @PathVariable int itemId) {
 
         dto.setCreated(LocalDateTime.now());
 
@@ -42,23 +48,27 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@PathVariable int itemId, @RequestBody ItemDto dto,
-                          @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemDto updateItem(@PathVariable int itemId,
+                              @RequestBody ItemDto dto,
+                              @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
         dto.setId(itemId);
 
-        return itemService.update(dto, userId);
+        return itemService.updateItem(dto, userId);
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(@PathVariable int itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public void deleteItem(@PathVariable int itemId,
+                           @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
         itemService.deleteItem(itemId, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam String text) {
+    public List<ItemDto> searchItems(@RequestParam String text,
+                                     @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                     @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-        return itemService.search(text);
+        return itemService.searchItems(text, from, size);
     }
 }

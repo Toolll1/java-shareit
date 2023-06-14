@@ -14,7 +14,6 @@ public class BookingMapper {
     private final UserMapper userMapper;
     private final ItemService itemService;
     private final ItemMapper itemMapper;
-    private final ItemRepository itemRepository;
 
     public static BookingDto objectToDto(Booking booking) {
 
@@ -31,21 +30,22 @@ public class BookingMapper {
 
     public Booking dtoToObject(BookingDto dto, Integer userId) {
 
-        ItemDto itemDto = itemService.findById(dto.getItemId(), userId);
+        ItemDto itemDto = itemService.findItemById(dto.getItemId(), userId);
 
         return Booking.builder()
                 .id(dto.getId())
                 .start(dto.getStart())
                 .end(dto.getEnd())
                 .item(itemMapper.dtoToObject(itemDto, itemDto.getOwner().getId()))
-                .booker(userMapper.dtoToObject(userService.findById(userId)))
+                .booker(userMapper.dtoToObject(userService.findUserById(userId)))
                 .status(dto.getStatus())
                 .build();
     }
 
     public Booking dtoToObject(BookingDto dto) {
 
-        Item item = itemRepository.findById(dto.getItemId()).get();
+        int userId = dto.getItem().getOwner().getId();
+        Item item = itemMapper.dtoToObject(itemService.findItemById(dto.getItemId(), userId), userId);
 
         return Booking.builder()
                 .id(dto.getId())

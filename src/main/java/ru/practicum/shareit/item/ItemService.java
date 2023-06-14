@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.*;
@@ -29,14 +30,17 @@ public class ItemService {
     private final CommentMapper commentMapper;
     private final BookingRepository bookingRepository;
 
-    public List<ItemDto> findAllByOwnerId(Integer userId) {
+    private PageRequest pageableCreator(Integer from, Integer size) {
+
+        return PageRequest.of(from / size, size);
+    }
+
+    public List<ItemDto> findAllByOwnerId(Integer userId, Integer from, Integer size) {
 
         log.info("I received a request to search for all the items added by the user to the id " + userId);
-
-        Collection<Item> items = itemRepository.findAllByOwnerId(userId);
+        Collection<Item> items = itemRepository.findAllByOwnerId(userId, pageableCreator(from, size));
         List<Booking> bookingList = bookingRepository.findAllByItemIn(items).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
         Map<Item, List<Booking>> itemsMap = new HashMap<>();
         List<ItemDto> itemDtoList = new ArrayList<>();
@@ -64,7 +68,8 @@ public class ItemService {
         return itemDtoList;
     }
 
-    public ItemDto findById(int itemId, Integer userId) {
+
+    public ItemDto findItemById(int itemId, Integer userId) {
 
         log.info("Searching for a item with an id " + itemId);
 
@@ -89,14 +94,13 @@ public class ItemService {
         }
 
         List<Booking> bookingList = bookingRepository.findAllByItem(item).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
 
         return addData(items.get(), bookingList);
     }
 
-    private ItemDto addData(Item item, List<Booking> bookingList) {
+    public ItemDto addData(Item item, List<Booking> bookingList) {
 
         ItemDto itemDto = ItemMapper.objectToDto(item);
         LocalDateTime now = LocalDateTime.now();
@@ -128,7 +132,7 @@ public class ItemService {
         return itemDto;
     }
 
-    public ItemDto create(ItemDto dto, Integer userId) {
+    public ItemDto createItem(ItemDto dto, Integer userId) {
 
         Item item = itemMapper.dtoToObject(dto, userId);
         ItemDto itemDto = ItemMapper.objectToDto(itemRepository.save(item));
@@ -138,7 +142,7 @@ public class ItemService {
         return itemDto;
     }
 
-    public ItemDto update(ItemDto dto, Integer userId) {
+    public ItemDto updateItem(ItemDto dto, Integer userId) {
 
         Item oldItem = itemRepository.findById(dto.getId()).get();
         Item item = itemMapper.dtoToObject(dto, userId);
@@ -174,7 +178,7 @@ public class ItemService {
 
     public void deleteItem(int itemId, Integer userId) {
 
-        if (findById(itemId, userId).getOwner().getId().equals(userId)) {
+        if (findItemById(itemId, userId).getOwner().getId().equals(userId)) {
             itemRepository.deleteById(itemId);
         } else {
             throw new ValidateException("Only its owner can delete an item");
@@ -183,7 +187,7 @@ public class ItemService {
         log.info("I received a request to delete a item with an id " + itemId);
     }
 
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> searchItems(String text, Integer from, Integer size) {
 
         log.info("I received a request to search for things whose name or description contains text: " + text);
 
@@ -191,7 +195,7 @@ public class ItemService {
             return new ArrayList<>();
         }
 
-        Set<Item> itemSet = new HashSet<>(itemRepository.search(text));
+        Set<Item> itemSet = new HashSet<>(itemRepository.search(text, pageableCreator(from, size)));
 
         return itemSet.stream()
                 .map(ItemMapper::objectToDto)
@@ -201,17 +205,17 @@ public class ItemService {
 
     public CommentDto createComment(CommentDto dto, Integer userId, int itemId) {
 
-        Item item = itemMapper.dtoToObject(findById(itemId, userId), userId);
+        Item item = itemMapper.dtoToObject(findItemById(itemId, userId), userId);
         List<Booking> bookingList = Objects.requireNonNullElseGet(bookingRepository.findAllByItemIn(List.of(item)).stream()
-                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) ||
-                        booking.getStatus().equals(BookingStatus.APPROVED))
+                .filter((booking) -> booking.getStatus().equals(BookingStatus.WAITING) || booking.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList()), ArrayList::new);
         Comment comment = commentMapper.dtoToObject(dto, userId, item);
         CommentDto commentDto;
 
         for (Booking booking : bookingList) {
 
-            if (booking.getBooker().getId().equals(userId) && !booking.getStart().isAfter(dto.getCreated())) {
+            if (booking.getBooker().getId().equals(userId)
+                    && !booking.getStart().isAfter(dto.getCreated())) {
 
                 commentDto = CommentMapper.objectToDto(commentRepository.save(comment));
 
