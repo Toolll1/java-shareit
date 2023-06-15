@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.comment;
 
 import lombok.*;
 
-import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 @Setter
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 public class CommentDto {
 
     private Integer id;
-    @NotEmpty
     private String text;
     private Integer itemId;
     private Integer authorId;
