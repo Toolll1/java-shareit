@@ -39,7 +39,7 @@ public class BookingClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/bookings/{bookingId}";
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, params);
+        return responseRequest(url, HttpMethod.GET, requestEntity, params);
     }
 
     public <T> ResponseEntity<Object> createBooking(Integer userId, @Nullable T body) {
@@ -47,7 +47,7 @@ public class BookingClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/bookings";
 
-        return responseRequest (url, HttpMethod.POST, requestEntity, null);
+        return responseRequest(url, HttpMethod.POST, requestEntity, null);
     }
 
     public <T> Object updateBooking(Integer userId, Integer bookingId, Boolean available, @Nullable T body) {
@@ -56,7 +56,7 @@ public class BookingClient {
         HashMap<String, Integer> params = new HashMap<>(Map.of("bookingId", bookingId));
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.PATCH, requestEntity, params);
+        return responseRequest(url, HttpMethod.PATCH, requestEntity, params);
     }
 
     public <T> void deleteBooking(int bookingId, Integer userId, @Nullable T body) {
@@ -72,7 +72,7 @@ public class BookingClient {
         String url = serverUrl + "/bookings?from=" + from + "&size=" + size + "&state=" + state;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> getBookingsForUsersItems(Integer userId, String state, Integer from, Integer size, @Nullable T body) {
@@ -80,7 +80,7 @@ public class BookingClient {
         String url = serverUrl + "/bookings/owner?from=" + from + "&size=" + size + "&state=" + state;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     private HttpHeaders defaultHeaders(Integer userId) {
@@ -102,7 +102,7 @@ public class BookingClient {
         ResponseEntity<Object> response;
 
         try {
-            if (params != null){
+            if (params != null) {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class, params);
             } else {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class);

@@ -38,7 +38,7 @@ public class ItemRequestClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/requests";
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> findAllRequest(Integer userId, Integer from, Integer size, @Nullable T body) {
@@ -46,7 +46,7 @@ public class ItemRequestClient {
         String url = serverUrl + "/requests/all?from=" + from + "&size=" + size;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> findRequestById(int itemRequestId, Integer userId, @Nullable T body) {
@@ -55,7 +55,7 @@ public class ItemRequestClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/requests/{itemRequestId}";
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, params);
+        return responseRequest(url, HttpMethod.GET, requestEntity, params);
     }
 
     public <T> ResponseEntity<Object> createRequest(@Nullable T body, Integer userId) {
@@ -63,7 +63,7 @@ public class ItemRequestClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/requests";
 
-        return responseRequest (url, HttpMethod.POST, requestEntity, null);
+        return responseRequest(url, HttpMethod.POST, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> updateRequest(@Nullable T body, Integer userId) {
@@ -71,7 +71,7 @@ public class ItemRequestClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/requests";
 
-        return responseRequest (url, HttpMethod.PUT, requestEntity, null);
+        return responseRequest(url, HttpMethod.PUT, requestEntity, null);
     }
 
     public void deleteRequest(int itemRequestId) {
@@ -100,7 +100,7 @@ public class ItemRequestClient {
         ResponseEntity<Object> response;
 
         try {
-            if (params != null){
+            if (params != null) {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class, params);
             } else {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class);

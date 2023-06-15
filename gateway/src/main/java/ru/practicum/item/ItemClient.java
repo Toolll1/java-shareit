@@ -38,7 +38,7 @@ public class ItemClient {
         String url = serverUrl + "/items?from=" + from + "&size=" + size;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> findItemById(int itemId, Integer userId, @Nullable T body) {
@@ -47,7 +47,7 @@ public class ItemClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/items/{itemId}";
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, params);
+        return responseRequest(url, HttpMethod.GET, requestEntity, params);
     }
 
     public <T> ResponseEntity<Object> createItem(Integer userId, @Nullable T body) {
@@ -55,7 +55,7 @@ public class ItemClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/items";
 
-        return responseRequest (url, HttpMethod.POST, requestEntity, null);
+        return responseRequest(url, HttpMethod.POST, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> createComment(Integer userId, int itemId, @Nullable T body) {
@@ -64,7 +64,7 @@ public class ItemClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/items/{itemId}/comment";
 
-        return responseRequest (url, HttpMethod.POST, requestEntity, params);
+        return responseRequest(url, HttpMethod.POST, requestEntity, params);
     }
 
     public <T> Object updateItem(Integer userId, @Nullable T body, int itemId) {
@@ -73,7 +73,7 @@ public class ItemClient {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         String url = serverUrl + "/items/{itemId}";
 
-        return responseRequest (url, HttpMethod.PATCH, requestEntity, params);
+        return responseRequest(url, HttpMethod.PATCH, requestEntity, params);
     }
 
     public <T> void deleteItem(int itemId, Integer userId, @Nullable T body) {
@@ -89,7 +89,7 @@ public class ItemClient {
         String url = serverUrl + "/items/search?text=" + text + "&from=" + from + "&size=" + size;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        return responseRequest (url, HttpMethod.GET, requestEntity, null);
+        return responseRequest(url, HttpMethod.GET, requestEntity, null);
     }
 
     private HttpHeaders defaultHeaders(Integer userId) {
@@ -111,7 +111,7 @@ public class ItemClient {
         ResponseEntity<Object> response;
 
         try {
-            if (params != null){
+            if (params != null) {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class, params);
             } else {
                 response = rest.exchange(url, httpMethod, requestEntity, Object.class);

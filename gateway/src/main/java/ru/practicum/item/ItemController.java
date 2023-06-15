@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.item.comment.CommentDto;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
