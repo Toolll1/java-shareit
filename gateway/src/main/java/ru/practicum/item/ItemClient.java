@@ -3,6 +3,7 @@ package ru.practicum.item;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.lang.Nullable;
@@ -20,52 +21,59 @@ import java.util.Map;
 @Transactional
 public class ItemClient {
 
+    @Value("${shareit-server.url:http://localhost:9090}")
+    String serverUrl;
+
+    private final RestTemplate rest;
+
+    public ItemClient() {
+        this.rest = new RestTemplate();
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        rest.setRequestFactory(requestFactory);
+    }
+
     public <T> ResponseEntity<Object> findAllByOwnerId(Integer userId, Integer from, Integer size, @Nullable T body) {
 
+        String url = serverUrl + "/items?from=" + from + "&size=" + size;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        String url = ("http://localhost:9090/items?from=" + from + "&size=" + size);
-        HttpMethod httpMethod = HttpMethod.GET;
 
-        return responseRequest(url, null, requestEntity, httpMethod);
+        return responseRequest (url, HttpMethod.GET, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> findItemById(int itemId, Integer userId, @Nullable T body) {
 
         HashMap<String, Integer> params = new HashMap<>(Map.of("itemId", itemId));
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        String url = "http://localhost:9090/items/{itemId}";
-        HttpMethod httpMethod = HttpMethod.GET;
+        String url = serverUrl + "/items/{itemId}";
 
-        return responseRequest(url, params, requestEntity, httpMethod);
+        return responseRequest (url, HttpMethod.GET, requestEntity, params);
     }
 
     public <T> ResponseEntity<Object> createItem(Integer userId, @Nullable T body) {
 
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        String url = "http://localhost:9090/items";
-        HttpMethod httpMethod = HttpMethod.POST;
+        String url = serverUrl + "/items";
 
-        return responseRequest(url, null, requestEntity, httpMethod);
+        return responseRequest (url, HttpMethod.POST, requestEntity, null);
     }
 
     public <T> ResponseEntity<Object> createComment(Integer userId, int itemId, @Nullable T body) {
 
         HashMap<String, Integer> params = new HashMap<>(Map.of("itemId", itemId));
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        String url = "http://localhost:9090/items/{itemId}/comment";
-        HttpMethod httpMethod = HttpMethod.POST;
+        String url = serverUrl + "/items/{itemId}/comment";
 
-        return responseRequest(url, params, requestEntity, httpMethod);
+        return responseRequest (url, HttpMethod.POST, requestEntity, params);
     }
 
     public <T> Object updateItem(Integer userId, @Nullable T body, int itemId) {
 
         HashMap<String, Integer> params = new HashMap<>(Map.of("itemId", itemId));
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        String url = "http://localhost:9090/items/{itemId}";
-        HttpMethod httpMethod = HttpMethod.PATCH;
+        String url = serverUrl + "/items/{itemId}";
 
-        return responseRequest(url, params, requestEntity, httpMethod);
+        return responseRequest (url, HttpMethod.PATCH, requestEntity, params);
     }
 
     public <T> void deleteItem(int itemId, Integer userId, @Nullable T body) {
@@ -73,26 +81,15 @@ public class ItemClient {
         HashMap<String, Integer> params = new HashMap<>(Map.of("itemId", itemId));
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
 
-        new RestTemplate().delete("http://localhost:9090/items/{itemId}", requestEntity, params);
+        rest.delete(serverUrl + "/items/{itemId}", requestEntity, params);
     }
 
     public <T> ResponseEntity<Object> searchItems(String text, Integer from, Integer size, Integer userId, @Nullable T body) {
 
-        String url = "http://localhost:9090/items/search?text=" + text + "&from=" + from + "&size=" + size;
+        String url = serverUrl + "/items/search?text=" + text + "&from=" + from + "&size=" + size;
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
-        HttpMethod httpMethod = HttpMethod.GET;
 
-        return responseRequest(url, null, requestEntity, httpMethod);
-    }
-
-    private RestTemplate restTemplate() {
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        restTemplate.setRequestFactory(requestFactory);
-
-        return restTemplate;
+        return responseRequest (url, HttpMethod.GET, requestEntity, null);
     }
 
     private HttpHeaders defaultHeaders(Integer userId) {
@@ -109,18 +106,16 @@ public class ItemClient {
         return headers;
     }
 
-    private <T> ResponseEntity<Object> responseRequest(String url, HashMap<String, Integer> params, HttpEntity<T> requestEntity, HttpMethod httpMethod) {
+    private <T> ResponseEntity<Object> responseRequest(String url, HttpMethod httpMethod, HttpEntity<T> requestEntity, HashMap<String, Integer> params) {
 
         ResponseEntity<Object> response;
 
         try {
-
-            if (params != null) {
-                response = restTemplate().exchange(url, httpMethod, requestEntity, Object.class, params);
+            if (params != null){
+                response = rest.exchange(url, httpMethod, requestEntity, Object.class, params);
             } else {
-                response = restTemplate().exchange(url, httpMethod, requestEntity, Object.class);
+                response = rest.exchange(url, httpMethod, requestEntity, Object.class);
             }
-
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }

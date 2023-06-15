@@ -1,6 +1,7 @@
 package ru.practicum.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.http.HttpEntity;
@@ -20,9 +21,21 @@ import java.util.Map;
 @Transactional
 public class UserClient {
 
+    @Value("${shareit-server.url:http://localhost:9090}")
+    String serverUrl;
+
+    private final RestTemplate rest;
+
+    public UserClient() {
+        this.rest = new RestTemplate();
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        rest.setRequestFactory(requestFactory);
+    }
+
     public ResponseEntity<Object> findAllUsers() {
 
-        ResponseEntity<Object> response = new RestTemplate().getForEntity("http://localhost:9090/users", Object.class);
+        ResponseEntity<Object> response = rest.getForEntity(serverUrl + "/users", Object.class);
 
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(response.getStatusCode());
 
@@ -40,7 +53,7 @@ public class UserClient {
         ResponseEntity<Object> response;
 
         try {
-            response = new RestTemplate().getForEntity("http://localhost:9090/users/{userId}", Object.class, params);
+            response = rest.getForEntity(serverUrl + "/users/{userId}", Object.class, params);
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
@@ -59,7 +72,7 @@ public class UserClient {
         ResponseEntity<Object> response;
 
         try {
-            response = new RestTemplate().postForEntity("http://localhost:9090/users", newUser, Object.class);
+            response = rest.postForEntity(serverUrl + "/users", newUser, Object.class);
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
@@ -81,7 +94,7 @@ public class UserClient {
         ResponseEntity<Object> response;
 
         try {
-            response = restTemplate().exchange("http://localhost:9090/users/{userId}", HttpMethod.PATCH, httpEntity, Object.class, params);
+            response = rest.exchange(serverUrl + "/users/{userId}", HttpMethod.PATCH, httpEntity, Object.class, params);
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
@@ -99,16 +112,6 @@ public class UserClient {
 
         HashMap<String, Integer> params = new HashMap<>(Map.of("userId", userId));
 
-        new RestTemplate().delete("http://localhost:9090/users/{userId}", params);
-    }
-
-    private RestTemplate restTemplate() {
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        restTemplate.setRequestFactory(requestFactory);
-
-        return restTemplate;
+        rest.delete(serverUrl + "/users/{userId}", params);
     }
 }
